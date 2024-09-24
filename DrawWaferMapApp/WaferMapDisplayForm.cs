@@ -20,7 +20,8 @@ namespace DrawWaferMapApp
         public int XMin { set; get; } = 0;
         public int YMax { set; get; } = 0;
         public int YMin { set; get; } = 0;
-        public List<string[]> DataInfo { set; get; } = null;
+        public CsvDetail CsvDetail { set; get; }
+
         private WaferMap wfmMain;
 
         public WaferMapDisplayForm()
@@ -29,10 +30,44 @@ namespace DrawWaferMapApp
             InitializeOther();
         }
 
-        #region Events
+        #region Controls Events
         private void btnDrawWaferMap_Click(object sender, EventArgs e)
         {
             DrawWaferMap();
+        }
+
+        private void btnGoPosition_Click(object sender, EventArgs e)
+        {
+            if (wfmMain is null)
+            {
+                return;
+            }
+
+            try
+            {
+                int x = Convert.ToInt32(txtXCoordinate.Text);
+                int y = Convert.ToInt32(txtYCoordinate.Text);
+                if (x < XMin || x > XMax || y < YMin || y > YMax)
+                {
+                    MessageBox.Show("Please input a valid coordinate!");
+                    return;
+                }
+                wfmMain.SetPosition(x, y);
+            }
+            catch (FormatException ex)
+            {
+                MessageBox.Show("Please input a valid coordinate!");
+                return;
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+        }
+
+        private void btnGetElectricalValue_Click(object sender, EventArgs e)
+        {
+            // To do...
         }
         #endregion
 
@@ -53,6 +88,27 @@ namespace DrawWaferMapApp
                     XMin = this.XMin,
                     YMax = this.YMax,
                     YMin = this.YMin,
+                };
+                // 订阅事件，即时更新显示坐标
+                wfmMain.WaferMapMouseMove += (s, args) =>
+                {
+                    txtXCoordinate.Text = args.WaferX;
+                    txtYCoordinate.Text = args.WaferY;
+                    try
+                    {
+                        Coordinate coordinate = new Coordinate(Convert.ToInt32(args.WaferX), Convert.ToInt32(args.WaferY));
+                        txtBinNo.Text = BodyInfo[coordinate][2];
+                    }
+                    catch (FormatException ex)
+                    {
+                        txtBinNo.Text = "N/A";
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        txtBinNo.Text = "Error";
+                        return;
+                    }
                 };
                 utpWaferMap.ClientArea.Controls.Add(wfmMain);
             }

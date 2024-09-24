@@ -14,6 +14,9 @@ namespace DrawWaferMapApp.Controls
 {
     public partial class WaferMap : UserControl
     {
+        // Event
+        public event EventHandler<WaferMapMouseMoveEventArgs> WaferMapMouseMove;
+
         // Public Properties
         public Dictionary<Coordinate, string[]> BodyInfo { set; get; } = null;
         public int XMax { set; get; } = 0;
@@ -25,7 +28,7 @@ namespace DrawWaferMapApp.Controls
         public float Zoom { set; get; } = 1f;
         public Size DieSize { set; get; } = new Size(1, 1);  // 绘制 Die 的尺寸
         public bool RedrawWhenResize { set; get; } = true;
-
+        public CsvDetail CsvDetail { set; get; }
         /// <summary>
         /// Bin 颜色
         /// </summary>
@@ -36,6 +39,10 @@ namespace DrawWaferMapApp.Controls
         private int offsetY;
         private int waferWidth;
         private int waferHeight;
+        private float zoomTranslationX = 0;
+        private float zoomTranslationY = 0;
+        //private float xScale;
+        //private float yScale;
 
         public WaferMap()
         {
@@ -56,7 +63,7 @@ namespace DrawWaferMapApp.Controls
             YMin = yMin;
 
             InitializeComponent();
-            //SetStyle(ControlStyles.ResizeRedraw, true);  // 在调整窗口大小时重新绘制
+            SetStyle(ControlStyles.ResizeRedraw, true);  // 在调整窗口大小时重新绘制
             DoubleBuffered = true;  // 双缓冲
             SetBinColor();
             RegisterEvents();
@@ -81,12 +88,17 @@ namespace DrawWaferMapApp.Controls
             }
 
             e.Graphics.Clear(Color.White);  // Clear BackColor
-            e.Graphics.TranslateTransform(TranslationX, TranslationY);  // Set additional translation
+            // TranslateTransform 可以理解为：新的原点 = (0, 0) - (TranslationX, TranslationY)
+            e.Graphics.TranslateTransform(TranslationX + zoomTranslationX, TranslationY + zoomTranslationY);  // Set additional translation
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;  // Use antialias
 
             // 计算图像的绘制比例
-            float xScale = (float)this.Width / waferWidth;
-            float yScale = (float)this.Height / waferHeight;
+            float xScale = (float)Width / waferWidth * Zoom;
+            float yScale = (float)Height / waferHeight * Zoom;
+
+            // 记录偏移后的坐标系上限
+            float translationWidth = Width - (TranslationX + zoomTranslationX);
+            float translationHeight = Height - (TranslationY + zoomTranslationY);
 
             // 遍历 bodyInfo，绘制每个数据点
             foreach (var entry in BodyInfo)
@@ -98,11 +110,161 @@ namespace DrawWaferMapApp.Controls
                 float xPos = (coord.X - XMin) * xScale;
                 float yPos = (coord.Y - YMin) * yScale;
 
+                // 不需要绘制控件外的点
+                if (xPos > translationWidth || yPos > translationHeight)
+                {
+                    continue;
+                }
+
                 // 绘制每个点(椭圆)
                 e.Graphics.FillEllipse(new SolidBrush(GetBinColor(data[2])), xPos, yPos, DieSize.Width * xScale, DieSize.Height * yScale);
             }
         }
 
+        private Color GetBinColor(int binNo)
+        {
+            return Colors[binNo];
+        }
+
+        private Color GetBinColor(string binNo)
+        {
+            return Colors[Convert.ToInt32(binNo)];
+        }
+
+        /// <summary>
+        /// 为控件注册事件
+        /// </summary>
+        private void RegisterEvents()
+        {
+            this.MouseMove += WaferMap_MouseMove;
+            this.MouseDown += WaferMap_MouseDown;
+            this.MouseWheel += WaferMap_MouseWheel;
+            this.MouseUp += WaferMap_MouseUp;
+            this.MouseClick += WaferMap_MouseClick;
+        }
+
+        #region Functions use to draw sth.
+
+        #endregion
+
+        #region Mouse Events.Overwrite they if you need.
+        private bool isDragging = false;
+        private Point dragStart;
+        private Point lastMousePosition;
+        private Point lastZoomPosition;
+
+        public virtual void WaferMap_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                isDragging = true;
+                dragStart = e.Location;
+            }
+        }
+
+        public virtual void WaferMap_MouseMove(object sender, MouseEventArgs e)
+        {
+            // 检查鼠标是否在移动，如果位置没有变化，直接返回
+            if (e.Location == lastMousePosition)
+            {
+                return;
+            }
+
+            // 更新鼠标上次位置
+            lastMousePosition = e.Location;
+
+            // 根据鼠标当前坐标来计算当前 Die 的实际坐标
+            float xScale = (float)this.Width / waferWidth * Zoom;
+            float yScale = (float)this.Height / waferHeight * Zoom;
+            int waferX = (int)((e.X - (TranslationX + zoomTranslationX)) / xScale) + XMin;
+            int waferY = (int)((e.Y - (TranslationY + zoomTranslationY)) / yScale) + YMin;
+
+            if (!BodyInfo.ContainsKey(new Coordinate() { X = waferX, Y = waferY }))
+            {
+                WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs("N/A", "N/A"));
+            }
+            else
+            {
+                WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs(waferX.ToString(), waferY.ToString()));
+            }
+            Console.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
+
+            if (isDragging)
+            {
+                TranslationX += e.X - dragStart.X;
+                TranslationY += e.Y - dragStart.Y;
+
+                dragStart = e.Location;  // 更新拖动起点
+                this.Invalidate();  // 重新绘制
+            }
+        }
+
+        public virtual void WaferMap_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                isDragging = false;
+            }
+        }
+
+        public virtual void WaferMap_MouseWheel(object sender, MouseEventArgs e)
+        {
+            float oldZoom = Zoom;
+
+            if (e.Delta > 0)
+            {
+                Zoom += 0.1f; 
+            }
+            else if (e.Delta < 0)
+            {
+                Zoom = Math.Max(0.1f, Zoom - 0.1f);
+            }
+
+            // 保持鼠标当前所在的点相对不变。如果鼠标位置没有发生改变，就累加偏移量；否则重置偏移量
+            //TranslationX = oldXPos - newXPos
+            //TranslationX += e.X * (oldZoom - Zoom);
+            //TranslationY += e.Y * (oldZoom - Zoom);
+            if (e.Location == lastZoomPosition)
+            {
+                zoomTranslationX += e.X * (oldZoom - Zoom);
+                zoomTranslationY += e.Y * (oldZoom - Zoom);
+            }
+            else
+            {
+                zoomTranslationX = e.X * (1.0f - Zoom);
+                zoomTranslationY = e.Y * (1.0f - Zoom);
+            }
+            lastZoomPosition = e.Location;
+
+            this.Invalidate();
+
+            // 根据鼠标当前坐标来计算当前 Die 的实际坐标
+            float xScale = (float)this.Width / waferWidth * Zoom;
+            float yScale = (float)this.Height / waferHeight * Zoom;
+            int waferX = (int)((e.X - (TranslationX + zoomTranslationX)) / xScale) + XMin;
+            int waferY = (int)((e.Y - (TranslationY + zoomTranslationY)) / yScale) + YMin;
+
+            if (!BodyInfo.ContainsKey(new Coordinate() { X = waferX, Y = waferY }))
+            {
+                WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs("N/A", "N/A"));
+            }
+            else
+            {
+                WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs(waferX.ToString(), waferY.ToString()));
+            }
+            Console.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
+        }
+
+        public virtual void WaferMap_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                MessageBox.Show("Left Click!");
+            }
+        }
+        #endregion
+
+        #region Public Methods
         public void RedrawWaferMap()
         {
             this.Invalidate();
@@ -145,26 +307,41 @@ namespace DrawWaferMapApp.Controls
             Colors = colors;
         }
 
-        private Color GetBinColor(int binNo)
-        {
-            return Colors[binNo];
-        }
-
-        private Color GetBinColor(string binNo)
-        {
-            return Colors[Convert.ToInt32(binNo)];
-        }
-
         /// <summary>
-        /// 为控件注册事件
+        /// 定位 Wafer 上的某个点，将该点移至控件的中心
         /// </summary>
-        private void RegisterEvents()
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public void SetPosition(int x, int y)
         {
-
+            // 计算图像的绘制比例
+            float xScale = (float)this.Width / waferWidth * Zoom;
+            float yScale = (float)this.Height / waferHeight * Zoom;
+            // 该点相对于中心点的位置。中心点：((XMax + XMin) / 2, (YMax + YMin) / 2)
+            int xCenter = (XMax + XMin) / 2;
+            int yCenter = (YMax + YMin) / 2;
+            // 计算偏移值
+            // 若该点位于中心点左侧，则 xDiff 为正值，坐标系应该向右移动；反之，xDiff 为负值，坐标系应该向左移动
+            // 若该点位于中心点上方，则 yDiff 为正值，坐标系应该向下移动；反之，yDiff 为负值，坐标系应该向上移动
+            int xDiff = xCenter - x;
+            int yDiff = yCenter - y;
+            // 真正偏移值应算上比例
+            TranslationX = xDiff * xScale;
+            TranslationY = yDiff * yScale;
+            RedrawWaferMap();
         }
-
-        #region Functions use to draw sth.
-        
         #endregion
+    }
+
+    public class WaferMapMouseMoveEventArgs : EventArgs
+    {
+        public string WaferX { get; }
+        public string WaferY { get; }
+
+        public WaferMapMouseMoveEventArgs(string waferX, string waferY)
+        {
+            WaferX = waferX;
+            WaferY = waferY;
+        }
     }
 }

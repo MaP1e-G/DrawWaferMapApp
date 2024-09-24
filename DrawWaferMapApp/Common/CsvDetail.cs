@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace DrawWaferMapApp.Common
 {
-    public class AOICsvTemplate : CsvTemplate
+    public class CsvDetail
     {
+        public Dictionary<Coordinate, string[]> BodyInfo { get; set; }
     }
 }

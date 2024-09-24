@@ -11,6 +11,10 @@ namespace DrawWaferMapApp.Common
         public int X { set; get; } = 0;
         public int Y { set; get; } = 0;
 
+        // Constructor
+        public Coordinate() { }
+        public Coordinate(int x, int y) { X = x; Y = y; }
+
         public override bool Equals(object obj)
         {
             if (obj is Coordinate other)

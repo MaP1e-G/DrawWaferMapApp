@@ -36,6 +36,7 @@
     <Reference Include="Infragistics4.Shared.v19.1, Version=19.1.20191.294, Culture=neutral, PublicKeyToken=7dd5c3163f2cd0cb" />
     <Reference Include="Infragistics4.Win.Misc.v19.1, Version=19.1.20191.294, Culture=neutral, PublicKeyToken=7dd5c3163f2cd0cb, processorArchitecture=MSIL" />
     <Reference Include="Infragistics4.Win.UltraWinEditors.v19.1, Version=19.1.20191.294, Culture=neutral, PublicKeyToken=7dd5c3163f2cd0cb, processorArchitecture=MSIL" />
+    <Reference Include="Infragistics4.Win.UltraWinStatusBar.v19.1, Version=19.1.20191.294, Culture=neutral, PublicKeyToken=7dd5c3163f2cd0cb, processorArchitecture=MSIL" />
     <Reference Include="Infragistics4.Win.v19.1, Version=19.1.20191.294, Culture=neutral, PublicKeyToken=7dd5c3163f2cd0cb" />
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
@@ -55,14 +56,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Coordinate.cs" />
+    <Compile Include="Common\CsvDetail.cs" />
     <Compile Include="Common\CsvTemplate.cs" />
-    <Compile Include="Common\TestCsvTemplates\AOICsvTemplate.cs" />
+    <Compile Include="Common\TestCsvDetails\AOICsvDetail.cs" />
+    <Compile Include="Controls\MiniWaferMap.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\MiniWaferMap.Designer.cs">
+      <DependentUpon>MiniWaferMap.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\WaferMap.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Controls\WaferMap.Designer.cs">
       <DependentUpon>WaferMap.cs</DependentUpon>
     </Compile>
+    <Compile Include="Exceptions\CsvProcessException.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

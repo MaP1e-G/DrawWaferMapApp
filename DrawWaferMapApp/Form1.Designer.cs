@@ -31,6 +31,7 @@ namespace DrawWaferMapApp
         {
             Infragistics.Win.Appearance appearance1 = new Infragistics.Win.Appearance();
             this.ultraGroupBox1 = new Infragistics.Win.Misc.UltraGroupBox();
+            this.btnTest = new Infragistics.Win.Misc.UltraButton();
             this.btnQuickRead = new Infragistics.Win.Misc.UltraButton();
             this.btnCsvReadTest = new Infragistics.Win.Misc.UltraButton();
             this.btnShowMap = new Infragistics.Win.Misc.UltraButton();
@@ -39,11 +40,12 @@ namespace DrawWaferMapApp
             this.ultraLabel1 = new Infragistics.Win.Misc.UltraLabel();
             this.ultraGroupBox2 = new Infragistics.Win.Misc.UltraGroupBox();
             this.ultraSplitter1 = new Infragistics.Win.Misc.UltraSplitter();
-            this.btnTest = new Infragistics.Win.Misc.UltraButton();
+            this.ultraStatusBar1 = new Infragistics.Win.UltraWinStatusBar.UltraStatusBar();
             ((System.ComponentModel.ISupportInitialize)(this.ultraGroupBox1)).BeginInit();
             this.ultraGroupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtMapPath)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ultraGroupBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ultraStatusBar1)).BeginInit();
             this.SuspendLayout();
             // 
             // ultraGroupBox1
@@ -61,6 +63,17 @@ namespace DrawWaferMapApp
             this.ultraGroupBox1.Size = new System.Drawing.Size(800, 200);
             this.ultraGroupBox1.TabIndex = 0;
             this.ultraGroupBox1.Text = "ultraGroupBox1";
+            // 
+            // btnTest
+            // 
+            this.btnTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnTest.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnTest.Location = new System.Drawing.Point(688, 138);
+            this.btnTest.Name = "btnTest";
+            this.btnTest.Size = new System.Drawing.Size(106, 25);
+            this.btnTest.TabIndex = 6;
+            this.btnTest.Text = "Test";
+            this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
             // 
             // btnQuickRead
             // 
@@ -133,7 +146,7 @@ namespace DrawWaferMapApp
             this.ultraGroupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ultraGroupBox2.Location = new System.Drawing.Point(0, 210);
             this.ultraGroupBox2.Name = "ultraGroupBox2";
-            this.ultraGroupBox2.Size = new System.Drawing.Size(800, 240);
+            this.ultraGroupBox2.Size = new System.Drawing.Size(800, 217);
             this.ultraGroupBox2.TabIndex = 1;
             this.ultraGroupBox2.Text = "ultraGroupBox2";
             // 
@@ -148,16 +161,13 @@ namespace DrawWaferMapApp
             this.ultraSplitter1.Size = new System.Drawing.Size(800, 10);
             this.ultraSplitter1.TabIndex = 2;
             // 
-            // btnTest
+            // ultraStatusBar1
             // 
-            this.btnTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnTest.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnTest.Location = new System.Drawing.Point(688, 138);
-            this.btnTest.Name = "btnTest";
-            this.btnTest.Size = new System.Drawing.Size(106, 25);
-            this.btnTest.TabIndex = 6;
-            this.btnTest.Text = "Test";
-            this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
+            this.ultraStatusBar1.Location = new System.Drawing.Point(0, 427);
+            this.ultraStatusBar1.Name = "ultraStatusBar1";
+            this.ultraStatusBar1.Size = new System.Drawing.Size(800, 23);
+            this.ultraStatusBar1.TabIndex = 0;
+            this.ultraStatusBar1.Text = "ultraStatusBar1";
             // 
             // Form1
             // 
@@ -165,6 +175,7 @@ namespace DrawWaferMapApp
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.ultraGroupBox2);
+            this.Controls.Add(this.ultraStatusBar1);
             this.Controls.Add(this.ultraSplitter1);
             this.Controls.Add(this.ultraGroupBox1);
             this.Name = "Form1";
@@ -174,6 +185,7 @@ namespace DrawWaferMapApp
             this.ultraGroupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtMapPath)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ultraGroupBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ultraStatusBar1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -190,6 +202,7 @@ namespace DrawWaferMapApp
         private Infragistics.Win.Misc.UltraButton btnCsvReadTest;
         private Infragistics.Win.Misc.UltraButton btnQuickRead;
         private Infragistics.Win.Misc.UltraButton btnTest;
+        private Infragistics.Win.UltraWinStatusBar.UltraStatusBar ultraStatusBar1;
     }
 }
 

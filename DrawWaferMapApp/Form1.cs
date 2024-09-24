@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,6 +17,8 @@ namespace DrawWaferMapApp
 {
     public partial class Form1 : Form
     {
+        private static string[] RedYellowColumnList = { "POSX", "POSY", "BIN", "ORGBINNO", "VF2", "VF1", "VZ", "IR", "IF1", "LOP1", "WLD", "WLP", "HW", "VF3", "IR2", "IV3" };
+
         private CsvProcessTool csvProcessTool;
         private CsvTemplate csvTemplate;
 
@@ -42,7 +45,7 @@ namespace DrawWaferMapApp
             this.DragDrop += new DragEventHandler(Form1_DragDrop);
 
             // 为文本框设置默认值
-            txtMapPath.Text = @"C:\Users\67020\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-01#RF06DD3DD.csv";
+            txtMapPath.Text = @"C:\Users\admin\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-02#RF06DD3DD.csv";
         }
 
         // 当拖放操作进入窗体时触发
@@ -141,7 +144,8 @@ namespace DrawWaferMapApp
                     HeaderRowStartNumber = 1,
                     HeaderRowEndNumber = 7,
                     XCoordinateColumnNumber = 1,
-                    YCoordinateColumnNumber = 2
+                    YCoordinateColumnNumber = 2,
+                    ColumnNames = RedYellowColumnList,
                 };
                 headerInfo = csvProcessTool.GetHeaderInfo(records, csvTemplate);
                 bodyInfo = csvProcessTool.GetBodyInfo(records, csvTemplate);
@@ -171,7 +175,8 @@ namespace DrawWaferMapApp
                     HeaderRowStartNumber = 1,
                     HeaderRowEndNumber = 7,
                     XCoordinateColumnNumber = 1,
-                    YCoordinateColumnNumber = 2
+                    YCoordinateColumnNumber = 2,
+                    ColumnNames = RedYellowColumnList,
                 };
                 headerInfo = await Task.Run(() => csvProcessTool.GetHeaderInfoParallel(records, csvTemplate));
                 bodyInfo = await Task.Run(() => csvProcessTool.GetBodyInfoParallel(records, csvTemplate));
@@ -186,8 +191,20 @@ namespace DrawWaferMapApp
 
         private void btnTest_Click(object sender, EventArgs e)
         {
-            WaferMapDisplayForm waferMapDisplayForm = new WaferMapDisplayForm();
-            waferMapDisplayForm.Show();
+            AOICsvDetail aoiDetail = new AOICsvDetail();
+            CsvDetail csvDetail = aoiDetail;
+            PropertyInfo[] infos = csvDetail.GetType().GetProperties();
+            foreach (var propertyInfo in infos)
+            {
+                if (typeof(string).IsAssignableFrom(propertyInfo.PropertyType))
+                {
+                    Console.WriteLine($"{propertyInfo.Name}:");
+                    Console.WriteLine($"  DeclaringType: {propertyInfo.DeclaringType}");
+                    Console.WriteLine($"  ReflectedType: {propertyInfo.ReflectedType}");
+                    Console.WriteLine($"  MemberType: {propertyInfo.MemberType}");
+                    Console.WriteLine($"  PropertyType: {propertyInfo.PropertyType}");
+                }
+            }
         }
 
         private int GetXMax()
