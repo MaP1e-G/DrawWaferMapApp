@@ -152,6 +152,8 @@ namespace DrawWaferMapApp.Controls
         private Point dragStart;
         private Point lastMousePosition;
         private Point lastZoomPosition;
+        private int curX;
+        private int curY;
 
         public virtual void WaferMap_MouseDown(object sender, MouseEventArgs e)
         {
@@ -178,6 +180,8 @@ namespace DrawWaferMapApp.Controls
             float yScale = (float)this.Height / waferHeight * Zoom;
             int waferX = (int)((e.X - (TranslationX + zoomTranslationX)) / xScale) + XMin;
             int waferY = (int)((e.Y - (TranslationY + zoomTranslationY)) / yScale) + YMin;
+            curX = waferX;
+            curY = waferY;
 
             if (!BodyInfo.ContainsKey(new Coordinate() { X = waferX, Y = waferY }))
             {
@@ -207,43 +211,96 @@ namespace DrawWaferMapApp.Controls
             }
         }
 
+        //public virtual void WaferMap_MouseWheel(object sender, MouseEventArgs e)
+        //{
+        //    float oldZoom = Zoom;
+
+        //    if (e.Delta > 0)
+        //    {
+        //        Zoom += 0.1f; 
+        //    }
+        //    else if (e.Delta < 0)
+        //    {
+        //        Zoom = Math.Max(0.1f, Zoom - 0.1f);
+        //    }
+
+        //    // 根据鼠标当前坐标来计算当前 Die 的实际坐标
+        //    float xScale = (float)this.Width / waferWidth * Zoom;
+        //    float yScale = (float)this.Height / waferHeight * Zoom;
+        //    int waferX = (int)((e.X - (TranslationX + zoomTranslationX)) / xScale) + XMin;
+        //    int waferY = (int)((e.Y - (TranslationY + zoomTranslationY)) / yScale) + YMin;
+
+        //    // 保持鼠标当前所在的点相对不变。如果鼠标位置没有发生改变，就累加偏移量；否则重置偏移量
+        //    //TranslationX = oldXPos - newXPos
+        //    //TranslationX += e.X * (oldZoom - Zoom);
+        //    //TranslationY += e.Y * (oldZoom - Zoom);
+        //    if (e.Location == lastZoomPosition)
+        //    {
+        //        zoomTranslationX += e.X * (oldZoom - Zoom);
+        //        zoomTranslationY += e.Y * (oldZoom - Zoom);
+        //    }
+        //    else
+        //    {
+        //        // 根据 x 和 y 计算位置
+        //        float xPos = (curX - XMin) * xScale;
+        //        float yPos = (curY - YMin) * yScale;
+        //        zoomTranslationX = xPos - e.X;
+        //        zoomTranslationY = yPos - e.Y;
+        //    }
+        //    lastZoomPosition = e.Location;
+
+        //    this.Invalidate();
+
+        //    if (!BodyInfo.ContainsKey(new Coordinate() { X = waferX, Y = waferY }))
+        //    {
+        //        WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs("N/A", "N/A"));
+        //    }
+        //    else
+        //    {
+        //        WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs(waferX.ToString(), waferY.ToString()));
+        //    }
+        //    Console.WriteLine($"wafer X: {waferX}, wafer Y: {waferY}.");
+        //    Console.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
+        //}
         public virtual void WaferMap_MouseWheel(object sender, MouseEventArgs e)
         {
+            // 记录旧的缩放比例
             float oldZoom = Zoom;
 
+            // 更新 Zoom
             if (e.Delta > 0)
             {
-                Zoom += 0.1f; 
+                Zoom += 0.1f;  // 放大
             }
             else if (e.Delta < 0)
             {
-                Zoom = Math.Max(0.1f, Zoom - 0.1f);
+                Zoom = Math.Max(0.1f, Zoom - 0.1f);  // 缩小，确保缩放比例不小于0.1
             }
 
-            // 保持鼠标当前所在的点相对不变。如果鼠标位置没有发生改变，就累加偏移量；否则重置偏移量
-            //TranslationX = oldXPos - newXPos
-            //TranslationX += e.X * (oldZoom - Zoom);
-            //TranslationY += e.Y * (oldZoom - Zoom);
-            if (e.Location == lastZoomPosition)
-            {
-                zoomTranslationX += e.X * (oldZoom - Zoom);
-                zoomTranslationY += e.Y * (oldZoom - Zoom);
-            }
-            else
-            {
-                zoomTranslationX = e.X * (1.0f - Zoom);
-                zoomTranslationY = e.Y * (1.0f - Zoom);
-            }
-            lastZoomPosition = e.Location;
+            // 计算缩放前的鼠标相对于整个wafer图的坐标
+            float oldXPos = (e.X - TranslationX) / (oldZoom * ((float)Width / waferWidth));
+            float oldYPos = (e.Y - TranslationY) / (oldZoom * ((float)Height / waferHeight));
 
+            // 更新 xScale 和 yScale
+            float xScale = (float)Width / waferWidth * Zoom;
+            float yScale = (float)Height / waferHeight * Zoom;
+
+            // 计算缩放后的鼠标相对于整个wafer图的坐标
+            float newXPos = (e.X - TranslationX) / (Zoom * ((float)Width / waferWidth));
+            float newYPos = (e.Y - TranslationY) / (Zoom * ((float)Height / waferHeight));
+
+            // 通过平移调整，使鼠标相对位置不变
+            TranslationX += (newXPos - oldXPos) * Zoom * ((float)Width / waferWidth);
+            TranslationY += (newYPos - oldYPos) * Zoom * ((float)Height / waferHeight);
+
+            // 请求重绘
             this.Invalidate();
 
-            // 根据鼠标当前坐标来计算当前 Die 的实际坐标
-            float xScale = (float)this.Width / waferWidth * Zoom;
-            float yScale = (float)this.Height / waferHeight * Zoom;
-            int waferX = (int)((e.X - (TranslationX + zoomTranslationX)) / xScale) + XMin;
-            int waferY = (int)((e.Y - (TranslationY + zoomTranslationY)) / yScale) + YMin;
+            // 获取当前wafer的X和Y位置
+            int waferX = (int)((e.X - TranslationX) / (Zoom * ((float)Width / waferWidth)) + XMin);
+            int waferY = (int)((e.Y - TranslationY) / (Zoom * ((float)Height / waferHeight)) + YMin);
 
+            // 触发鼠标移动事件
             if (!BodyInfo.ContainsKey(new Coordinate() { X = waferX, Y = waferY }))
             {
                 WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs("N/A", "N/A"));
@@ -252,8 +309,12 @@ namespace DrawWaferMapApp.Controls
             {
                 WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs(waferX.ToString(), waferY.ToString()));
             }
+
+            // Debug 输出
+            Console.WriteLine($"wafer X: {waferX}, wafer Y: {waferY}.");
             Console.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
         }
+
 
         public virtual void WaferMap_MouseClick(object sender, MouseEventArgs e)
         {

@@ -46,6 +46,7 @@ namespace DrawWaferMapApp
 
             // 为文本框设置默认值
             txtMapPath.Text = @"C:\Users\admin\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-02#RF06DD3DD.csv";
+            txtMapPath.Text = @"C:\Users\67020\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-01#RF06DD3DD.csv";
         }
 
         // 当拖放操作进入窗体时触发
