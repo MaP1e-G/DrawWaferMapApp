@@ -59,6 +59,7 @@
     <Compile Include="Common\CsvDetail.cs" />
     <Compile Include="Common\CsvTemplate.cs" />
     <Compile Include="Common\TestCsvDetails\AOICsvDetail.cs" />
+    <Compile Include="Common\TestCsvTemplate\AOICsvTemplate.cs" />
     <Compile Include="Controls\MiniWaferMap.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -72,6 +73,7 @@
       <DependentUpon>WaferMap.cs</DependentUpon>
     </Compile>
     <Compile Include="Exceptions\CsvProcessException.cs" />
+    <Compile Include="Exceptions\WaferMapException.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

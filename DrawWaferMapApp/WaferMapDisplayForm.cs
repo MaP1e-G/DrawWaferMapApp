@@ -14,13 +14,11 @@ namespace DrawWaferMapApp
 {
     public partial class WaferMapDisplayForm : Form
     {
-        public Dictionary<string, string[]> HeaderInfo { set; get; } = null;
-        public Dictionary<Coordinate, string[]> BodyInfo { set; get; } = null;
         public int XMax { set; get; } = 0;
         public int XMin { set; get; } = 0;
         public int YMax { set; get; } = 0;
         public int YMin { set; get; } = 0;
-        public CsvDetail CsvDetail { set; get; }
+        public CsvDetail Detail { set; get; }
 
         private WaferMap wfmMain;
 
@@ -83,11 +81,11 @@ namespace DrawWaferMapApp
             {
                 wfmMain = new WaferMap()
                 {
-                    BodyInfo = this.BodyInfo,
                     XMax = this.XMax,
                     XMin = this.XMin,
                     YMax = this.YMax,
                     YMin = this.YMin,
+                    Detail = this.Detail,
                 };
                 // 订阅事件，即时更新显示坐标
                 wfmMain.WaferMapMouseMove += (s, args) =>
@@ -97,7 +95,7 @@ namespace DrawWaferMapApp
                     try
                     {
                         Coordinate coordinate = new Coordinate(Convert.ToInt32(args.WaferX), Convert.ToInt32(args.WaferY));
-                        txtBinNo.Text = BodyInfo[coordinate][2];
+                        txtBinNo.Text = Detail.BodyInfo[coordinate][2];
                     }
                     catch (FormatException ex)
                     {

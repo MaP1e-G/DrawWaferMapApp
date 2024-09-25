@@ -21,6 +21,7 @@ namespace DrawWaferMapApp
 
         private CsvProcessTool csvProcessTool;
         private CsvTemplate csvTemplate;
+        private CsvDetail csvDetail;
 
         private Dictionary<string, string[]> headerInfo;
         private Dictionary<Coordinate, string[]> bodyInfo;
@@ -46,7 +47,7 @@ namespace DrawWaferMapApp
 
             // 为文本框设置默认值
             txtMapPath.Text = @"C:\Users\admin\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-02#RF06DD3DD.csv";
-            txtMapPath.Text = @"C:\Users\67020\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-01#RF06DD3DD.csv";
+            //txtMapPath.Text = @"C:\Users\67020\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-01#RF06DD3DD.csv";
         }
 
         // 当拖放操作进入窗体时触发
@@ -104,7 +105,7 @@ namespace DrawWaferMapApp
         #region Events
         private void btnShowMap_Click(object sender, EventArgs e)
         {
-            if (bodyInfo is null)
+            if (csvDetail is null || csvDetail.BodyInfo is null)
             {
                 return;
             }
@@ -113,13 +114,13 @@ namespace DrawWaferMapApp
             xMin = GetXMin();
             yMax = GetYMax();
             yMin = GetYMin();
-            WaferMapDisplayForm waferMapDisplayForm = new WaferMapDisplayForm() { 
-                HeaderInfo = headerInfo,
-                BodyInfo = bodyInfo,
+            WaferMapDisplayForm waferMapDisplayForm = new WaferMapDisplayForm()
+            {
                 XMax = xMax,
                 XMin = xMin,
                 YMax = yMax,
-                YMin = yMin
+                YMin = yMin,
+                Detail = csvDetail,
             };
             waferMapDisplayForm.Show();
         }
@@ -135,22 +136,14 @@ namespace DrawWaferMapApp
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                List<string[]> records = csvProcessTool.ReadCsvFile(txtMapPath.Text);
-                Console.WriteLine(records.Count.ToString() + Environment.NewLine + stopwatch.Elapsed);
-                CsvTemplate csvTemplate = new CsvTemplate()
-                {
-                    DataRowStartNumber = 10,
-                    HeaderKeyColumnNumber = 1,
-                    HeaderValueColumnNumber = 3,
-                    HeaderRowStartNumber = 1,
-                    HeaderRowEndNumber = 7,
-                    XCoordinateColumnNumber = 1,
-                    YCoordinateColumnNumber = 2,
-                    ColumnNames = RedYellowColumnList,
-                };
-                headerInfo = csvProcessTool.GetHeaderInfo(records, csvTemplate);
-                bodyInfo = csvProcessTool.GetBodyInfo(records, csvTemplate);
-                stopwatch.Stop();
+                //List<string[]> records = csvProcessTool.ReadCsvFile(txtMapPath.Text);
+                //Console.WriteLine(records.Count.ToString() + Environment.NewLine + stopwatch.Elapsed);
+                //headerInfo = csvProcessTool.GetHeaderInfo(records, csvTemplate);
+                //bodyInfo = csvProcessTool.GetBodyInfo(records, csvTemplate);
+                //stopwatch.Stop();
+                AOICsvTemplate csvTemplate = new AOICsvTemplate();
+                csvDetail = new AOICsvDetail();
+                csvProcessTool.ReadCsvFile(txtMapPath.Text, csvTemplate, csvDetail);
                 Console.WriteLine("Completed." + Environment.NewLine + stopwatch.Elapsed);
                 MessageBox.Show("Completed.");
             }
@@ -166,7 +159,10 @@ namespace DrawWaferMapApp
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                List<string[]> records = await Task.Run(() => csvProcessTool.ReadCsvFile(txtMapPath.Text));
+                Console.WriteLine("Now Thread: " + Environment.CurrentManagedThreadId);
+                List<string[]> records = await csvProcessTool.ReadCsvFileAsync(txtMapPath.Text);
+                Console.WriteLine("await return: " + stopwatch.Elapsed);
+                Console.WriteLine("Now Thread: " + Environment.CurrentManagedThreadId);
                 Console.WriteLine(records.Count.ToString() + Environment.NewLine + stopwatch.Elapsed);
                 CsvTemplate csvTemplate = new CsvTemplate()
                 {
@@ -179,10 +175,10 @@ namespace DrawWaferMapApp
                     YCoordinateColumnNumber = 2,
                     ColumnNames = RedYellowColumnList,
                 };
-                headerInfo = await Task.Run(() => csvProcessTool.GetHeaderInfoParallel(records, csvTemplate));
+                headerInfo = await Task.Run(() => csvProcessTool.GetHeaderInfo(records, csvTemplate));
                 bodyInfo = await Task.Run(() => csvProcessTool.GetBodyInfoParallel(records, csvTemplate));
-                stopwatch.Stop();
                 Console.WriteLine("Completed." + Environment.NewLine + stopwatch.Elapsed);
+                stopwatch.Stop();
             }
             catch (Exception ex)
             {
@@ -197,7 +193,7 @@ namespace DrawWaferMapApp
             PropertyInfo[] infos = csvDetail.GetType().GetProperties();
             foreach (var propertyInfo in infos)
             {
-                if (typeof(string).IsAssignableFrom(propertyInfo.PropertyType))
+                if (typeof(string).IsAssignableFrom(propertyInfo.PropertyType) || typeof(string[]).IsAssignableFrom(propertyInfo.PropertyType))
                 {
                     Console.WriteLine($"{propertyInfo.Name}:");
                     Console.WriteLine($"  DeclaringType: {propertyInfo.DeclaringType}");
@@ -213,7 +209,8 @@ namespace DrawWaferMapApp
             int result = 0;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            result = bodyInfo.Max(kvp => kvp.Key.X);
+            //result = bodyInfo.Max(kvp => kvp.Key.X);
+            result = csvDetail.BodyInfo.Max(kvp => kvp.Key.X);
             stopwatch.Stop();
             Console.WriteLine($"X MAX: {result}" + Environment.NewLine + stopwatch.Elapsed);
             return result;
@@ -224,7 +221,8 @@ namespace DrawWaferMapApp
             int result = 0;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            result = bodyInfo.Min(kvp => kvp.Key.X);
+            //result = bodyInfo.Min(kvp => kvp.Key.X);
+            result = csvDetail.BodyInfo.Min(kvp => kvp.Key.X);
             stopwatch.Stop();
             Console.WriteLine($"X MIN: {result}" + Environment.NewLine + stopwatch.Elapsed);
             return result;
@@ -235,7 +233,8 @@ namespace DrawWaferMapApp
             int result = 0;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            result = bodyInfo.Max(kvp => kvp.Key.Y);
+            //result = bodyInfo.Max(kvp => kvp.Key.Y);
+            result = csvDetail.BodyInfo.Max(kvp => kvp.Key.Y);
             stopwatch.Stop();
             Console.WriteLine($"Y MAX: {result}" + Environment.NewLine + stopwatch.Elapsed);
             return result;
@@ -246,7 +245,8 @@ namespace DrawWaferMapApp
             int result = 0;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            result = bodyInfo.Min(kvp => kvp.Key.Y);
+            //result = bodyInfo.Min(kvp => kvp.Key.Y);
+            result = csvDetail.BodyInfo.Min(kvp => kvp.Key.Y);
             stopwatch.Stop();
             Console.WriteLine($"Y MIN: {result}" + Environment.NewLine + stopwatch.Elapsed);
             return result;

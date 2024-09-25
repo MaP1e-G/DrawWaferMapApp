@@ -12,9 +12,16 @@ using System.Threading.Tasks;
 
 namespace DrawWaferMapApp.Tools
 {
-    class CsvProcessTool
+    public class CsvProcessTool
     {
+        // Event
+        public event EventHandler<ProcessStatusEventArgs> ProgressStatus;  // 进度条事件
+
+        // Property
         public string Pattern { get; set; } = @",(?=(?:[^""]*""[^""]*"")*[^""]*$)";  // 默认匹配模式
+        public char SplitChar { get; set; } = ',';  // 默认分隔符
+
+        // Field
         private Regex csvSplitRegex;
 
         public CsvProcessTool()
@@ -33,14 +40,26 @@ namespace DrawWaferMapApp.Tools
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public List<string[]> ReadCsvFile(string filePath)
+        public List<string[]> ReadCsvFile(string filePath) => ReadCsvFile(filePath, false);
+
+        public List<string[]> ReadCsvFile(string filePath, bool useRegex)
         {
             List<string[]> result = new List<string[]>();
             try
             {
-                foreach (var line in File.ReadLines(filePath))
+                if (useRegex)
                 {
-                    result.Add(ParseCsvLine(line));
+                    foreach (var line in File.ReadLines(filePath))
+                    {
+                        result.Add(ParseCsvLineByRegex(line));
+                    }
+                }
+                else
+                {
+                    foreach (var line in File.ReadLines(filePath))
+                    {
+                        result.Add(ParseCsvLine(line, SplitChar));
+                    }
                 }
             }
             catch (Exception ex)
@@ -75,25 +94,43 @@ namespace DrawWaferMapApp.Tools
                 int yColumnIndex = csvTemplate.YCoordinateColumnNumber - 1;
                 // 创建新的 BodyInfo
                 csvDetail.BodyInfo = new Dictionary<Coordinate, string[]>();
+                string[] currentRow;
 
                 foreach (var line in File.ReadLines(filePath))
                 {
-                    string[] currentRow = ParseCsvLine(line);
                     if (IsInRange(currentRowNumber, csvTemplate.HeaderRowStartNumber, csvTemplate.HeaderRowEndNumber))
                     {
+                        // 表头行用正则进行分隔
+                        currentRow = ParseCsvLineByRegex(line);
                         // 利用反射为 csvDetail 中的属性进行赋值，区分大小写。
                         // 查找匹配的属性
                         var propertyInfo = propertyInfos.FirstOrDefault(info => info.Name.Equals(currentRow[keyColumnIndex], StringComparison.Ordinal));
                         if (propertyInfo != null)
                         {
                             // 获取值并赋值
-                            string valueToSet = currentRow[valueColumnIndex];
-                            object convertedValue = Convert.ChangeType(valueToSet, propertyInfo.PropertyType);
-                            propertyInfo.SetValue(csvDetail, convertedValue);
+                            if (propertyInfo.PropertyType.IsValueType || typeof(string).IsAssignableFrom(propertyInfo.PropertyType))
+                            {
+                                string valueToSet = currentRow[valueColumnIndex];
+                                object convertedValue = Convert.ChangeType(valueToSet, propertyInfo.PropertyType);
+                                propertyInfo.SetValue(csvDetail, convertedValue);
+                            }
+                            else if (propertyInfo.PropertyType.IsArray)
+                            {
+                                Type elementType = propertyInfo.PropertyType.GetElementType();
+                                string[] valueToSet = currentRow.Skip(valueColumnIndex).ToArray();
+                                Array convertedArray = Array.CreateInstance(elementType, valueToSet.Length);
+                                for (int i = 0; i < valueToSet.Length; i++)
+                                {
+                                    convertedArray.SetValue(Convert.ChangeType(valueToSet[i], elementType), i);
+                                }
+                                propertyInfo.SetValue(csvDetail, convertedArray);
+                            }
                         }
                     }
                     else if (currentRowNumber >= csvTemplate.DataRowStartNumber)
                     {
+                        // 数据行用逗号进行分隔
+                        currentRow = ParseCsvLine(line);
                         Coordinate currentCoordinate = new Coordinate { X = Convert.ToInt32(currentRow[xColumnIndex]), Y = Convert.ToInt32(currentRow[yColumnIndex]) };
                         csvDetail.BodyInfo.Add(currentCoordinate, currentRow);
                     }
@@ -126,25 +163,6 @@ namespace DrawWaferMapApp.Tools
                 throw;
             }
 
-            return result;
-        }
-
-        /// <summary>
-        /// 利用正则表达式解析 CSV 文件中的一行数据
-        /// </summary>
-        /// <param name="line"></param>
-        /// <returns>解析后的字符串数组</returns>
-        private string[] ParseCsvLine(string line)
-        {
-            string[] result;
-            try
-            {
-                result = csvSplitRegex.Split(line).Select(field => field.Trim('"')).ToArray();
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
             return result;
         }
 
@@ -321,7 +339,7 @@ namespace DrawWaferMapApp.Tools
                 int xColumnIndex = csvTemplate.XCoordinateColumnNumber - 1;
                 int yColumnIndex = csvTemplate.YCoordinateColumnNumber - 1;
 
-                Parallel.For(dataRowStart, csvData.Count, i => 
+                Parallel.For(dataRowStart, csvData.Count, i =>
                 {
                     string[] currentRow = csvData[i];
                     Coordinate currentCoordinate = new Coordinate { X = Convert.ToInt32(currentRow[xColumnIndex]), Y = Convert.ToInt32(currentRow[yColumnIndex]) };
@@ -336,6 +354,7 @@ namespace DrawWaferMapApp.Tools
             }
         }
 
+        #region Private methods
         /// <summary>
         /// 判断 num 是否在范围内，lower为下限，upper为上限，开区间
         /// </summary>
@@ -350,6 +369,56 @@ namespace DrawWaferMapApp.Tools
         private bool IsOutOfRange<T>(T num, T lower, T upper) where T : IComparable<T>
         {
             return num.CompareTo(lower) < 0 || num.CompareTo(upper) > 0;
+        }
+
+        /// <summary>
+        /// 通过 String.Split 解析 CSV 文件中的一行数据
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="splitChar">分隔符，默认为逗号</param>
+        /// <returns>解析后的字符串数组</returns>
+        private string[] ParseCsvLine(string line, char splitChar = ',')
+        {
+            string[] result;
+            try
+            {
+                result = line.Split(splitChar);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 利用正则表达式解析 CSV 文件中的一行数据
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns>解析后的字符串数组</returns>
+        private string[] ParseCsvLineByRegex(string line)
+        {
+            string[] result;
+            try
+            {
+                result = csvSplitRegex.Split(line).Select(field => field.Trim('"')).ToArray();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            return result;
+        }
+        #endregion
+    }
+
+    public class ProcessStatusEventArgs : EventArgs
+    {
+        public string Status { get; }
+
+        public ProcessStatusEventArgs(string status)
+        {
+            Status = status;
         }
     }
 }
