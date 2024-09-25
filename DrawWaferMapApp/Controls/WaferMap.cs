@@ -304,26 +304,31 @@ namespace DrawWaferMapApp.Controls
         /// <summary>
         /// 定位 Wafer 上的某个点，将该点移至控件的中心
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <param name="x">目标点的 X 坐标</param>
+        /// <param name="y">目标点的 Y 坐标</param>
         public void SetPosition(int x, int y)
         {
-            // 计算图像的绘制比例
+            // 计算当前图像的绘制比例，结合 Zoom 缩放
             float xScale = (float)Width / waferWidth * Zoom;
             float yScale = (float)Height / waferHeight * Zoom;
-            // 该点相对于中心点的位置。中心点：((XMax + XMin) / 2, (YMax + YMin) / 2)
-            int xCenter = (XMax + XMin) / 2;
-            int yCenter = (YMax + YMin) / 2;
+
+            // 获取控件的中心点（像素坐标）
+            float controlCenterX = Width / 2f;
+            float controlCenterY = Height / 2f;
+
+            // 计算目标点在当前缩放下的实际绘制位置
+            float targetXPos = (x - XMin) * xScale;
+            float targetYPos = (y - YMin) * yScale;
+
             // 计算偏移值
             // 若该点位于中心点左侧，则 xDiff 为正值，坐标系应该向右移动；反之，xDiff 为负值，坐标系应该向左移动
             // 若该点位于中心点上方，则 yDiff 为正值，坐标系应该向下移动；反之，yDiff 为负值，坐标系应该向上移动
-            int xDiff = xCenter - x;
-            int yDiff = yCenter - y;
-            // 真正偏移值应算上比例
-            TranslationX = xDiff * xScale;
-            TranslationY = yDiff * yScale;
+            TranslationX = controlCenterX - targetXPos;
+            TranslationY = controlCenterY - targetYPos;
+
             RedrawWaferMap();
         }
+
         #endregion
     }
 
