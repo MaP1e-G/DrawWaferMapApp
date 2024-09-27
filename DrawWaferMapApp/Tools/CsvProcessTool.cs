@@ -14,9 +14,6 @@ namespace DrawWaferMapApp.Tools
 {
     public class CsvProcessTool
     {
-        // Event
-        public event EventHandler<ProcessStatusEventArgs> ProgressStatus;  // 进度条事件
-
         // Property
         public string Pattern { get; set; } = @",(?=(?:[^""]*""[^""]*"")*[^""]*$)";  // 默认匹配模式
         public char SplitChar { get; set; } = ',';  // 默认分隔符
@@ -75,7 +72,7 @@ namespace DrawWaferMapApp.Tools
         /// <param name="filePath"></param>
         /// <param name="csvTemplate"></param>
         /// <returns></returns>
-        public void ReadCsvFile(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
+        public virtual void ReadCsvFile(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
         {
             if (csvTemplate is null || csvDetail is null)
                 throw new CsvProcessException("Read csv fail!There is a null input parameter.Please check the input parameters.");
@@ -143,6 +140,7 @@ namespace DrawWaferMapApp.Tools
             }
         }
 
+        // 异步不会阻塞线程，但是需要频繁切换上下文以及确认状态(虽然设置了 ConfigureAwait 但还是很慢)，总体性能会慢
         public async Task<List<string[]>> ReadCsvFileAsync(string filePath)
         {
             List<string[]> result = new List<string[]>();
@@ -152,7 +150,7 @@ namespace DrawWaferMapApp.Tools
                 using (StreamReader reader = new StreamReader(filePath))
                 {
                     string line;
-                    while ((line = await reader.ReadLineAsync()) != null)
+                    while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
                     {
                         result.Add(ParseCsvLine(line));
                     }
@@ -354,11 +352,11 @@ namespace DrawWaferMapApp.Tools
             }
         }
 
-        #region Private methods
+        #region Methods
         /// <summary>
         /// 判断 num 是否在范围内，lower为下限，upper为上限，开区间
         /// </summary>
-        private bool IsInRange<T>(T num, T lower, T upper) where T : IComparable<T>
+        protected bool IsInRange<T>(T num, T lower, T upper) where T : IComparable<T>
         {
             return num.CompareTo(lower) >= 0 && num.CompareTo(upper) <= 0;
         }
@@ -366,7 +364,7 @@ namespace DrawWaferMapApp.Tools
         /// <summary>
         /// 判断 num 是否不在范围内，lower为下限，upper为上限，开区间
         /// </summary>
-        private bool IsOutOfRange<T>(T num, T lower, T upper) where T : IComparable<T>
+        protected bool IsOutOfRange<T>(T num, T lower, T upper) where T : IComparable<T>
         {
             return num.CompareTo(lower) < 0 || num.CompareTo(upper) > 0;
         }
@@ -377,7 +375,7 @@ namespace DrawWaferMapApp.Tools
         /// <param name="line"></param>
         /// <param name="splitChar">分隔符，默认为逗号</param>
         /// <returns>解析后的字符串数组</returns>
-        private string[] ParseCsvLine(string line, char splitChar = ',')
+        protected string[] ParseCsvLine(string line, char splitChar = ',')
         {
             string[] result;
             try
@@ -396,7 +394,7 @@ namespace DrawWaferMapApp.Tools
         /// </summary>
         /// <param name="line"></param>
         /// <returns>解析后的字符串数组</returns>
-        private string[] ParseCsvLineByRegex(string line)
+        protected string[] ParseCsvLineByRegex(string line)
         {
             string[] result;
             try
@@ -410,15 +408,5 @@ namespace DrawWaferMapApp.Tools
             return result;
         }
         #endregion
-    }
-
-    public class ProcessStatusEventArgs : EventArgs
-    {
-        public string Status { get; }
-
-        public ProcessStatusEventArgs(string status)
-        {
-            Status = status;
-        }
     }
 }

@@ -29,10 +29,13 @@ namespace DrawWaferMapApp
         /// </summary>
         private void InitializeComponent()
         {
-            Infragistics.Win.Appearance appearance1 = new Infragistics.Win.Appearance();
+            Infragistics.Win.Appearance appearance5 = new Infragistics.Win.Appearance();
             this.ultraGroupBox1 = new Infragistics.Win.Misc.UltraGroupBox();
+            this.btnStreamReader = new Infragistics.Win.Misc.UltraButton();
+            this.btnFileReadLines = new Infragistics.Win.Misc.UltraButton();
+            this.btnFileReadAllLines = new Infragistics.Win.Misc.UltraButton();
             this.btnTest = new Infragistics.Win.Misc.UltraButton();
-            this.btnQuickRead = new Infragistics.Win.Misc.UltraButton();
+            this.btnAsyncRead = new Infragistics.Win.Misc.UltraButton();
             this.btnCsvReadTest = new Infragistics.Win.Misc.UltraButton();
             this.btnShowMap = new Infragistics.Win.Misc.UltraButton();
             this.btnSelect = new Infragistics.Win.Misc.UltraButton();
@@ -50,8 +53,11 @@ namespace DrawWaferMapApp
             // 
             // ultraGroupBox1
             // 
+            this.ultraGroupBox1.Controls.Add(this.btnStreamReader);
+            this.ultraGroupBox1.Controls.Add(this.btnFileReadLines);
+            this.ultraGroupBox1.Controls.Add(this.btnFileReadAllLines);
             this.ultraGroupBox1.Controls.Add(this.btnTest);
-            this.ultraGroupBox1.Controls.Add(this.btnQuickRead);
+            this.ultraGroupBox1.Controls.Add(this.btnAsyncRead);
             this.ultraGroupBox1.Controls.Add(this.btnCsvReadTest);
             this.ultraGroupBox1.Controls.Add(this.btnShowMap);
             this.ultraGroupBox1.Controls.Add(this.btnSelect);
@@ -64,6 +70,39 @@ namespace DrawWaferMapApp
             this.ultraGroupBox1.TabIndex = 0;
             this.ultraGroupBox1.Text = "ultraGroupBox1";
             // 
+            // btnStreamReader
+            // 
+            this.btnStreamReader.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStreamReader.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnStreamReader.Location = new System.Drawing.Point(6, 107);
+            this.btnStreamReader.Name = "btnStreamReader";
+            this.btnStreamReader.Size = new System.Drawing.Size(155, 25);
+            this.btnStreamReader.TabIndex = 9;
+            this.btnStreamReader.Text = "StreamReader";
+            this.btnStreamReader.Click += new System.EventHandler(this.btnStreamReader_Click);
+            // 
+            // btnFileReadLines
+            // 
+            this.btnFileReadLines.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnFileReadLines.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnFileReadLines.Location = new System.Drawing.Point(6, 76);
+            this.btnFileReadLines.Name = "btnFileReadLines";
+            this.btnFileReadLines.Size = new System.Drawing.Size(155, 25);
+            this.btnFileReadLines.TabIndex = 8;
+            this.btnFileReadLines.Text = "File.ReadLines";
+            this.btnFileReadLines.Click += new System.EventHandler(this.btnFileReadLines_Click);
+            // 
+            // btnFileReadAllLines
+            // 
+            this.btnFileReadAllLines.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnFileReadAllLines.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnFileReadAllLines.Location = new System.Drawing.Point(6, 45);
+            this.btnFileReadAllLines.Name = "btnFileReadAllLines";
+            this.btnFileReadAllLines.Size = new System.Drawing.Size(155, 25);
+            this.btnFileReadAllLines.TabIndex = 7;
+            this.btnFileReadAllLines.Text = "File.ReadAllLines";
+            this.btnFileReadAllLines.Click += new System.EventHandler(this.btnFileReadAllLines_Click);
+            // 
             // btnTest
             // 
             this.btnTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -75,16 +114,16 @@ namespace DrawWaferMapApp
             this.btnTest.Text = "Test";
             this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
             // 
-            // btnQuickRead
+            // btnAsyncRead
             // 
-            this.btnQuickRead.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnQuickRead.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnQuickRead.Location = new System.Drawing.Point(688, 107);
-            this.btnQuickRead.Name = "btnQuickRead";
-            this.btnQuickRead.Size = new System.Drawing.Size(106, 25);
-            this.btnQuickRead.TabIndex = 5;
-            this.btnQuickRead.Text = "Quick CSV Read";
-            this.btnQuickRead.Click += new System.EventHandler(this.btnQuickRead_Click);
+            this.btnAsyncRead.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAsyncRead.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnAsyncRead.Location = new System.Drawing.Point(688, 107);
+            this.btnAsyncRead.Name = "btnAsyncRead";
+            this.btnAsyncRead.Size = new System.Drawing.Size(106, 25);
+            this.btnAsyncRead.TabIndex = 5;
+            this.btnAsyncRead.Text = "Async Read";
+            this.btnAsyncRead.Click += new System.EventHandler(this.btnAsyncRead_Click);
             // 
             // btnCsvReadTest
             // 
@@ -131,9 +170,9 @@ namespace DrawWaferMapApp
             // 
             // ultraLabel1
             // 
-            appearance1.TextHAlignAsString = "Right";
-            appearance1.TextVAlignAsString = "Middle";
-            this.ultraLabel1.Appearance = appearance1;
+            appearance5.TextHAlignAsString = "Right";
+            appearance5.TextVAlignAsString = "Middle";
+            this.ultraLabel1.Appearance = appearance5;
             this.ultraLabel1.Font = new System.Drawing.Font("微软雅黑", 9F);
             this.ultraLabel1.Location = new System.Drawing.Point(12, 19);
             this.ultraLabel1.Name = "ultraLabel1";
@@ -200,9 +239,12 @@ namespace DrawWaferMapApp
         private Infragistics.Win.Misc.UltraButton btnSelect;
         private Infragistics.Win.UltraWinEditors.UltraTextEditor txtMapPath;
         private Infragistics.Win.Misc.UltraButton btnCsvReadTest;
-        private Infragistics.Win.Misc.UltraButton btnQuickRead;
+        private Infragistics.Win.Misc.UltraButton btnAsyncRead;
         private Infragistics.Win.Misc.UltraButton btnTest;
         private Infragistics.Win.UltraWinStatusBar.UltraStatusBar ultraStatusBar1;
+        private Infragistics.Win.Misc.UltraButton btnStreamReader;
+        private Infragistics.Win.Misc.UltraButton btnFileReadLines;
+        private Infragistics.Win.Misc.UltraButton btnFileReadAllLines;
     }
 }
 

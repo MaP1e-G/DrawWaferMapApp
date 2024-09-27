@@ -25,6 +25,7 @@ namespace DrawWaferMapApp
 
         private Dictionary<string, string[]> headerInfo;
         private Dictionary<Coordinate, string[]> bodyInfo;
+        private static readonly Stopwatch sw = new Stopwatch();
 
         public Form1()
         {
@@ -100,6 +101,83 @@ namespace DrawWaferMapApp
             }
         }
 
+        private int GetXMax()
+        {
+            int result = 0;
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            //result = bodyInfo.Max(kvp => kvp.Key.X);
+            result = csvDetail.BodyInfo.Max(kvp => kvp.Key.X);
+            stopwatch.Stop();
+            Console.WriteLine($"X MAX: {result}" + Environment.NewLine + stopwatch.Elapsed);
+            return result;
+        }
+
+        private int GetXMin()
+        {
+            int result = 0;
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            //result = bodyInfo.Min(kvp => kvp.Key.X);
+            result = csvDetail.BodyInfo.Min(kvp => kvp.Key.X);
+            stopwatch.Stop();
+            Console.WriteLine($"X MIN: {result}" + Environment.NewLine + stopwatch.Elapsed);
+            return result;
+        }
+
+        private int GetYMax()
+        {
+            int result = 0;
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            //result = bodyInfo.Max(kvp => kvp.Key.Y);
+            result = csvDetail.BodyInfo.Max(kvp => kvp.Key.Y);
+            stopwatch.Stop();
+            Console.WriteLine($"Y MAX: {result}" + Environment.NewLine + stopwatch.Elapsed);
+            return result;
+        }
+
+        private int GetYMin()
+        {
+            int result = 0;
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            //result = bodyInfo.Min(kvp => kvp.Key.Y);
+            result = csvDetail.BodyInfo.Min(kvp => kvp.Key.Y);
+            stopwatch.Stop();
+            Console.WriteLine($"Y MIN: {result}" + Environment.NewLine + stopwatch.Elapsed);
+            return result;
+        }
+
+        private string[] FileReadAllLines(string filePath)
+        {
+            string[] lines = File.ReadAllLines(filePath);
+            return lines;
+        }
+
+        private List<string> FileReadLines(string filePath)
+        {
+            List<string> lines = new List<string>();
+            foreach (string line in File.ReadLines(filePath))
+            {
+                lines.Add(line);
+            }
+            return lines;
+        }
+
+        private List<string> StreamReaderReadFile(string filePath)
+        {
+            List<string> lines = new List<string>();
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    lines.Add(line);
+                }
+            }
+            return lines;
+        }
         #endregion
 
         #region Events
@@ -153,16 +231,18 @@ namespace DrawWaferMapApp
             }
         }
 
-        private async void btnQuickRead_Click(object sender, EventArgs e)
+        private async void btnAsyncRead_Click(object sender, EventArgs e)
         {
             try
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
                 Console.WriteLine("Now Thread: " + Environment.CurrentManagedThreadId);
-                List<string[]> records = await csvProcessTool.ReadCsvFileAsync(txtMapPath.Text);
-                Console.WriteLine("await return: " + stopwatch.Elapsed);
+                Task<List<string[]>> t1 = csvProcessTool.ReadCsvFileAsync(txtMapPath.Text);
+                Console.WriteLine("1 await return: " + stopwatch.Elapsed);
                 Console.WriteLine("Now Thread: " + Environment.CurrentManagedThreadId);
+                await Task.WhenAll(t1);
+                List<string[]> records = t1.Result;
                 Console.WriteLine(records.Count.ToString() + Environment.NewLine + stopwatch.Elapsed);
                 CsvTemplate csvTemplate = new CsvTemplate()
                 {
@@ -175,8 +255,12 @@ namespace DrawWaferMapApp
                     YCoordinateColumnNumber = 2,
                     ColumnNames = RedYellowColumnList,
                 };
-                headerInfo = await Task.Run(() => csvProcessTool.GetHeaderInfo(records, csvTemplate));
-                bodyInfo = await Task.Run(() => csvProcessTool.GetBodyInfoParallel(records, csvTemplate));
+                var t2 = Task.Run(() => csvProcessTool.GetHeaderInfo(records, csvTemplate));
+                var t3 = Task.Run(() => csvProcessTool.GetBodyInfoParallel(records, csvTemplate));
+                Console.WriteLine("2 await return: " + stopwatch.Elapsed);
+                await Task.WhenAll(t2, t3);
+                headerInfo = t2.Result;
+                bodyInfo = t3.Result;
                 Console.WriteLine("Completed." + Environment.NewLine + stopwatch.Elapsed);
                 stopwatch.Stop();
             }
@@ -188,69 +272,43 @@ namespace DrawWaferMapApp
 
         private void btnTest_Click(object sender, EventArgs e)
         {
-            AOICsvDetail aoiDetail = new AOICsvDetail();
-            CsvDetail csvDetail = aoiDetail;
-            PropertyInfo[] infos = csvDetail.GetType().GetProperties();
-            foreach (var propertyInfo in infos)
-            {
-                if (typeof(string).IsAssignableFrom(propertyInfo.PropertyType) || typeof(string[]).IsAssignableFrom(propertyInfo.PropertyType))
-                {
-                    Console.WriteLine($"{propertyInfo.Name}:");
-                    Console.WriteLine($"  DeclaringType: {propertyInfo.DeclaringType}");
-                    Console.WriteLine($"  ReflectedType: {propertyInfo.ReflectedType}");
-                    Console.WriteLine($"  MemberType: {propertyInfo.MemberType}");
-                    Console.WriteLine($"  PropertyType: {propertyInfo.PropertyType}");
-                }
-            }
+            sw.Start();
+            AOICsvTemplate csvTemplate = new AOICsvTemplate();
+            AOICsvProcessTool csvProcessTool = new AOICsvProcessTool();
+            csvDetail = new AOICsvDetail();
+            csvProcessTool.ReadCsvFile(txtMapPath.Text, csvTemplate, csvDetail);
+            sw.Stop();
+            ultraStatusBar1.Text = $"AOICsvProcessTool spended time: {sw.Elapsed}";
         }
 
-        private int GetXMax()
+        private void btnFileReadAllLines_Click(object sender, EventArgs e)
         {
-            int result = 0;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            //result = bodyInfo.Max(kvp => kvp.Key.X);
-            result = csvDetail.BodyInfo.Max(kvp => kvp.Key.X);
+            string[] lines = FileReadAllLines(txtMapPath.Text);
             stopwatch.Stop();
-            Console.WriteLine($"X MAX: {result}" + Environment.NewLine + stopwatch.Elapsed);
-            return result;
+            ultraStatusBar1.Text = $"FileReadAllLines spended time: {stopwatch.Elapsed}";
         }
 
-        private int GetXMin()
+        private void btnFileReadLines_Click(object sender, EventArgs e)
         {
-            int result = 0;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            //result = bodyInfo.Min(kvp => kvp.Key.X);
-            result = csvDetail.BodyInfo.Min(kvp => kvp.Key.X);
+            List<string> lines = FileReadLines(txtMapPath.Text);
             stopwatch.Stop();
-            Console.WriteLine($"X MIN: {result}" + Environment.NewLine + stopwatch.Elapsed);
-            return result;
+            ultraStatusBar1.Text = $"FileReadLines spended time: {stopwatch.Elapsed}";
         }
 
-        private int GetYMax()
+        private void btnStreamReader_Click(object sender, EventArgs e)
         {
-            int result = 0;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            //result = bodyInfo.Max(kvp => kvp.Key.Y);
-            result = csvDetail.BodyInfo.Max(kvp => kvp.Key.Y);
+            List<string> lines = StreamReaderReadFile(txtMapPath.Text);
             stopwatch.Stop();
-            Console.WriteLine($"Y MAX: {result}" + Environment.NewLine + stopwatch.Elapsed);
-            return result;
-        }
-
-        private int GetYMin()
-        {
-            int result = 0;
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            //result = bodyInfo.Min(kvp => kvp.Key.Y);
-            result = csvDetail.BodyInfo.Min(kvp => kvp.Key.Y);
-            stopwatch.Stop();
-            Console.WriteLine($"Y MIN: {result}" + Environment.NewLine + stopwatch.Elapsed);
-            return result;
+            ultraStatusBar1.Text = $"StreamReaderReadFile spended time: {stopwatch.Elapsed}";
         }
         #endregion
+
+        
     }
 }

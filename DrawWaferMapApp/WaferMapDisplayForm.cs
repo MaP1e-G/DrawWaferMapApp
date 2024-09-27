@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,7 @@ namespace DrawWaferMapApp
         public CsvDetail Detail { set; get; }
 
         private WaferMap wfmMain;
+        private static readonly Stopwatch stopwatch = new Stopwatch();
 
         public WaferMapDisplayForm()
         {
@@ -31,7 +33,10 @@ namespace DrawWaferMapApp
         #region Controls Events
         private void btnDrawWaferMap_Click(object sender, EventArgs e)
         {
+            stopwatch.Start();
             DrawWaferMap();
+            Console.WriteLine($"Draw map time: {stopwatch.ElapsedMilliseconds}");
+            stopwatch.Stop();
         }
 
         private void btnGoPosition_Click(object sender, EventArgs e)

@@ -15,5 +15,6 @@ namespace DrawWaferMapApp.Common
         public string MapFileName { get; set; }
         public string TransferTime { get; set; }
         public string[] SortBINFileName { get; set; }
+        public string[,] Dies { get; set; }
     }
 }
