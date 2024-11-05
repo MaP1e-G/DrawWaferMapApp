@@ -29,13 +29,15 @@ namespace DrawWaferMapApp
         /// </summary>
         private void InitializeComponent()
         {
+            Infragistics.Win.Appearance appearance1 = new Infragistics.Win.Appearance();
             Infragistics.Win.Appearance appearance2 = new Infragistics.Win.Appearance();
             Infragistics.Win.Appearance appearance3 = new Infragistics.Win.Appearance();
-            Infragistics.Win.Appearance appearance1 = new Infragistics.Win.Appearance();
-            this.ultraGroupBox1 = new Infragistics.Win.Misc.UltraGroupBox();
-            this.ultraButton1 = new Infragistics.Win.Misc.UltraButton();
+            this.ugb1 = new Infragistics.Win.Misc.UltraGroupBox();
+            this.txtBinNo = new Infragistics.Win.UltraWinEditors.UltraTextEditor();
+            this.lblBinNo = new Infragistics.Win.Misc.UltraLabel();
+            this.btnDrawMapByMatrix = new Infragistics.Win.Misc.UltraButton();
             this.ptbNeighborPoint = new Infragistics.Win.UltraWinEditors.UltraPictureBox();
-            this.btnDrawWaferMap = new Infragistics.Win.Misc.UltraButton();
+            this.btnDrawMapByDictionary = new Infragistics.Win.Misc.UltraButton();
             this.btnGetElectricalValue = new Infragistics.Win.Misc.UltraButton();
             this.btnGoPosition = new Infragistics.Win.Misc.UltraButton();
             this.txtYCoordinate = new Infragistics.Win.UltraWinEditors.UltraTextEditor();
@@ -43,44 +45,63 @@ namespace DrawWaferMapApp
             this.lblYCoordinate = new Infragistics.Win.Misc.UltraLabel();
             this.lblXCoordinate = new Infragistics.Win.Misc.UltraLabel();
             this.utpWaferMap = new Infragistics.Win.Misc.UltraPanel();
-            this.lblBinNo = new Infragistics.Win.Misc.UltraLabel();
-            this.txtBinNo = new Infragistics.Win.UltraWinEditors.UltraTextEditor();
-            ((System.ComponentModel.ISupportInitialize)(this.ultraGroupBox1)).BeginInit();
-            this.ultraGroupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ugb1)).BeginInit();
+            this.ugb1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.txtBinNo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtYCoordinate)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtXCoordinate)).BeginInit();
             this.utpWaferMap.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.txtBinNo)).BeginInit();
             this.SuspendLayout();
             // 
-            // ultraGroupBox1
+            // ugb1
             // 
-            this.ultraGroupBox1.Controls.Add(this.txtBinNo);
-            this.ultraGroupBox1.Controls.Add(this.lblBinNo);
-            this.ultraGroupBox1.Controls.Add(this.ultraButton1);
-            this.ultraGroupBox1.Controls.Add(this.ptbNeighborPoint);
-            this.ultraGroupBox1.Controls.Add(this.btnDrawWaferMap);
-            this.ultraGroupBox1.Controls.Add(this.btnGetElectricalValue);
-            this.ultraGroupBox1.Controls.Add(this.btnGoPosition);
-            this.ultraGroupBox1.Controls.Add(this.txtYCoordinate);
-            this.ultraGroupBox1.Controls.Add(this.txtXCoordinate);
-            this.ultraGroupBox1.Controls.Add(this.lblYCoordinate);
-            this.ultraGroupBox1.Controls.Add(this.lblXCoordinate);
-            this.ultraGroupBox1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.ultraGroupBox1.Location = new System.Drawing.Point(849, 0);
-            this.ultraGroupBox1.Name = "ultraGroupBox1";
-            this.ultraGroupBox1.Size = new System.Drawing.Size(335, 861);
-            this.ultraGroupBox1.TabIndex = 1;
-            this.ultraGroupBox1.Text = "ultraGroupBox1";
+            this.ugb1.Controls.Add(this.txtBinNo);
+            this.ugb1.Controls.Add(this.lblBinNo);
+            this.ugb1.Controls.Add(this.btnDrawMapByMatrix);
+            this.ugb1.Controls.Add(this.ptbNeighborPoint);
+            this.ugb1.Controls.Add(this.btnDrawMapByDictionary);
+            this.ugb1.Controls.Add(this.btnGetElectricalValue);
+            this.ugb1.Controls.Add(this.btnGoPosition);
+            this.ugb1.Controls.Add(this.txtYCoordinate);
+            this.ugb1.Controls.Add(this.txtXCoordinate);
+            this.ugb1.Controls.Add(this.lblYCoordinate);
+            this.ugb1.Controls.Add(this.lblXCoordinate);
+            this.ugb1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.ugb1.Location = new System.Drawing.Point(849, 0);
+            this.ugb1.Name = "ugb1";
+            this.ugb1.Size = new System.Drawing.Size(335, 861);
+            this.ugb1.TabIndex = 1;
+            this.ugb1.Text = "ultraGroupBox1";
             // 
-            // ultraButton1
+            // txtBinNo
             // 
-            this.ultraButton1.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.ultraButton1.Location = new System.Drawing.Point(202, 103);
-            this.ultraButton1.Name = "ultraButton1";
-            this.ultraButton1.Size = new System.Drawing.Size(127, 23);
-            this.ultraButton1.TabIndex = 8;
-            this.ultraButton1.Text = "Draw Wafer Map";
+            this.txtBinNo.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.txtBinNo.Location = new System.Drawing.Point(44, 82);
+            this.txtBinNo.Name = "txtBinNo";
+            this.txtBinNo.Size = new System.Drawing.Size(70, 25);
+            this.txtBinNo.TabIndex = 10;
+            // 
+            // lblBinNo
+            // 
+            appearance1.TextHAlignAsString = "Center";
+            appearance1.TextVAlignAsString = "Middle";
+            this.lblBinNo.Appearance = appearance1;
+            this.lblBinNo.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblBinNo.Location = new System.Drawing.Point(6, 84);
+            this.lblBinNo.Name = "lblBinNo";
+            this.lblBinNo.Size = new System.Drawing.Size(32, 23);
+            this.lblBinNo.TabIndex = 9;
+            this.lblBinNo.Text = "BIN:";
+            // 
+            // btnDrawMapByMatrix
+            // 
+            this.btnDrawMapByMatrix.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnDrawMapByMatrix.Location = new System.Drawing.Point(202, 103);
+            this.btnDrawMapByMatrix.Name = "btnDrawMapByMatrix";
+            this.btnDrawMapByMatrix.Size = new System.Drawing.Size(127, 23);
+            this.btnDrawMapByMatrix.TabIndex = 8;
+            this.btnDrawMapByMatrix.Text = "Draw Map(Matrix)";
+            this.btnDrawMapByMatrix.Click += new System.EventHandler(this.btnDrawMapByMatrix_Click);
             // 
             // ptbNeighborPoint
             // 
@@ -93,15 +114,15 @@ namespace DrawWaferMapApp
             this.ptbNeighborPoint.Size = new System.Drawing.Size(323, 323);
             this.ptbNeighborPoint.TabIndex = 7;
             // 
-            // btnDrawWaferMap
+            // btnDrawMapByDictionary
             // 
-            this.btnDrawWaferMap.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnDrawWaferMap.Location = new System.Drawing.Point(202, 74);
-            this.btnDrawWaferMap.Name = "btnDrawWaferMap";
-            this.btnDrawWaferMap.Size = new System.Drawing.Size(127, 23);
-            this.btnDrawWaferMap.TabIndex = 6;
-            this.btnDrawWaferMap.Text = "Draw Wafer Map";
-            this.btnDrawWaferMap.Click += new System.EventHandler(this.btnDrawWaferMap_Click);
+            this.btnDrawMapByDictionary.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnDrawMapByDictionary.Location = new System.Drawing.Point(202, 74);
+            this.btnDrawMapByDictionary.Name = "btnDrawMapByDictionary";
+            this.btnDrawMapByDictionary.Size = new System.Drawing.Size(127, 23);
+            this.btnDrawMapByDictionary.TabIndex = 6;
+            this.btnDrawMapByDictionary.Text = "Draw Map(Dic)";
+            this.btnDrawMapByDictionary.Click += new System.EventHandler(this.btnDrawWaferMap_Click);
             // 
             // btnGetElectricalValue
             // 
@@ -173,58 +194,38 @@ namespace DrawWaferMapApp
             this.utpWaferMap.Size = new System.Drawing.Size(831, 837);
             this.utpWaferMap.TabIndex = 2;
             // 
-            // lblBinNo
-            // 
-            appearance1.TextHAlignAsString = "Center";
-            appearance1.TextVAlignAsString = "Middle";
-            this.lblBinNo.Appearance = appearance1;
-            this.lblBinNo.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblBinNo.Location = new System.Drawing.Point(6, 84);
-            this.lblBinNo.Name = "lblBinNo";
-            this.lblBinNo.Size = new System.Drawing.Size(32, 23);
-            this.lblBinNo.TabIndex = 9;
-            this.lblBinNo.Text = "BIN:";
-            // 
-            // txtBinNo
-            // 
-            this.txtBinNo.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.txtBinNo.Location = new System.Drawing.Point(44, 82);
-            this.txtBinNo.Name = "txtBinNo";
-            this.txtBinNo.Size = new System.Drawing.Size(70, 25);
-            this.txtBinNo.TabIndex = 10;
-            // 
             // WaferMapDisplayForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1184, 861);
             this.Controls.Add(this.utpWaferMap);
-            this.Controls.Add(this.ultraGroupBox1);
+            this.Controls.Add(this.ugb1);
             this.Name = "WaferMapDisplayForm";
             this.Text = "txtBinNo";
-            ((System.ComponentModel.ISupportInitialize)(this.ultraGroupBox1)).EndInit();
-            this.ultraGroupBox1.ResumeLayout(false);
-            this.ultraGroupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ugb1)).EndInit();
+            this.ugb1.ResumeLayout(false);
+            this.ugb1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.txtBinNo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtYCoordinate)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtXCoordinate)).EndInit();
             this.utpWaferMap.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.txtBinNo)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
-        private Infragistics.Win.Misc.UltraGroupBox ultraGroupBox1;
+        private Infragistics.Win.Misc.UltraGroupBox ugb1;
         private Infragistics.Win.Misc.UltraButton btnGetElectricalValue;
         private Infragistics.Win.Misc.UltraButton btnGoPosition;
         private Infragistics.Win.UltraWinEditors.UltraTextEditor txtYCoordinate;
         private Infragistics.Win.UltraWinEditors.UltraTextEditor txtXCoordinate;
         private Infragistics.Win.Misc.UltraLabel lblYCoordinate;
         private Infragistics.Win.Misc.UltraLabel lblXCoordinate;
-        private Infragistics.Win.Misc.UltraButton btnDrawWaferMap;
+        private Infragistics.Win.Misc.UltraButton btnDrawMapByDictionary;
         private Infragistics.Win.UltraWinEditors.UltraPictureBox ptbNeighborPoint;
         private Infragistics.Win.Misc.UltraPanel utpWaferMap;
-        private Infragistics.Win.Misc.UltraButton ultraButton1;
+        private Infragistics.Win.Misc.UltraButton btnDrawMapByMatrix;
         private Infragistics.Win.UltraWinEditors.UltraTextEditor txtBinNo;
         private Infragistics.Win.Misc.UltraLabel lblBinNo;
     }

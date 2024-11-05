@@ -29,6 +29,24 @@ namespace DrawWaferMapApp.Common
             XCoordinateColumnNumber = 1;
             YCoordinateColumnNumber = 2;
             ColumnNames = new string[] { "POSX", "POSY", "BIN", "ORGBINNO", "VF2", "VF1", "VZ", "IR", "IF1", "LOP1", "WLD", "WLP", "HW", "VF3", "IR2", "IV3" };
+            ColumnsMap = new Dictionary<string, int> {
+                { "POSX", 0 },
+                { "POSY", 1 },
+                { "BIN", 2 },
+                { "ORGBINNO", 3 },
+                { "VF2", 4 },
+                { "VF1", 5 },
+                { "VZ", 6 },
+                { "IR", 7 },
+                { "IF1", 8 },
+                { "LOP1", 9 },
+                { "WLD", 10 },
+                { "WLP", 11 },
+                { "HW", 12 },
+                { "VF3", 13 },
+                { "IR2", 14 },
+                { "IV3", 15 }
+            };
         }
     }
 }

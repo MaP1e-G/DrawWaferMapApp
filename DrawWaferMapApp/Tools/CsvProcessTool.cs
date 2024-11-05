@@ -3,6 +3,7 @@ using DrawWaferMapApp.Exceptions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -67,10 +68,11 @@ namespace DrawWaferMapApp.Tools
         }
 
         /// <summary>
-        /// 读取 CSV 文件, 并将信息存入到 csvDetail 中
+        /// 读取 CSV 文件, 并将信息存入到 csvDetail 的字典中
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="csvTemplate"></param>
+        /// /// <param name="csvDetail"></param>
         /// <returns></returns>
         public virtual void ReadCsvFile(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
         {
@@ -84,7 +86,7 @@ namespace DrawWaferMapApp.Tools
 
             try
             {
-                // 提前存储模板中的值，避免多次属性访问
+                // 提前存储模板中的值，避免多次属性访问，Index = Number - 1
                 int keyColumnIndex = csvTemplate.HeaderKeyColumnNumber - 1;
                 int valueColumnIndex = csvTemplate.HeaderValueColumnNumber - 1;
                 int xColumnIndex = csvTemplate.XCoordinateColumnNumber - 1;
@@ -133,6 +135,102 @@ namespace DrawWaferMapApp.Tools
                     }
                     currentRowNumber++;
                 }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 读取 CSV 文件, 并将信息存入到 csvDetail 的矩阵中
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="csvTemplate"></param>
+        /// <param name="csvDetail"></param>
+        /// <returns></returns>
+        public virtual void ReadCsvFile_Matrix(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            if (csvTemplate is null || csvDetail is null)
+                throw new CsvProcessException("Read csv fail!There is a null input parameter.Please check the input parameters.");
+
+            // 当前读取行的行号，从 1 开始。
+            int currentRowNumber = 1;
+            // 获取公有的、仅在当前类声明的实例属性
+            PropertyInfo[] propertyInfos = csvDetail.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            Console.WriteLine($"Read PropertyInfo end: {sw.Elapsed}");
+            // 临时存放数据的列表
+            List<string[]> tmpData = new List<string[]>();
+
+            try
+            {
+                // 提前存储模板中的值，避免多次属性访问，Index = Number - 1
+                int keyColumnIndex = csvTemplate.HeaderKeyColumnNumber - 1;
+                int valueColumnIndex = csvTemplate.HeaderValueColumnNumber - 1;
+                int xColumnIndex = csvTemplate.XCoordinateColumnNumber - 1;
+                int yColumnIndex = csvTemplate.YCoordinateColumnNumber - 1;
+                
+                string[] currentRow;
+
+                foreach (var line in File.ReadLines(filePath))
+                {
+                    if (IsInRange(currentRowNumber, csvTemplate.HeaderRowStartNumber, csvTemplate.HeaderRowEndNumber))
+                    {
+                        // 表头行用正则进行分隔
+                        currentRow = ParseCsvLineByRegex(line);
+                        // 利用反射为 csvDetail 中的属性进行赋值，区分大小写。
+                        // 查找匹配的属性
+                        var propertyInfo = propertyInfos.FirstOrDefault(info => info.Name.Equals(currentRow[keyColumnIndex], StringComparison.Ordinal));
+                        if (propertyInfo != null)
+                        {
+                            // 获取值并赋值
+                            if (propertyInfo.PropertyType.IsValueType || typeof(string).IsAssignableFrom(propertyInfo.PropertyType))
+                            {
+                                string valueToSet = currentRow[valueColumnIndex];
+                                object convertedValue = Convert.ChangeType(valueToSet, propertyInfo.PropertyType);
+                                propertyInfo.SetValue(csvDetail, convertedValue);
+                            }
+                            else if (propertyInfo.PropertyType.IsArray)
+                            {
+                                Type elementType = propertyInfo.PropertyType.GetElementType();
+                                string[] valueToSet = currentRow.Skip(valueColumnIndex).ToArray();
+                                Array convertedArray = Array.CreateInstance(elementType, valueToSet.Length);
+                                for (int i = 0; i < valueToSet.Length; i++)
+                                {
+                                    convertedArray.SetValue(Convert.ChangeType(valueToSet[i], elementType), i);
+                                }
+                                propertyInfo.SetValue(csvDetail, convertedArray);
+                            }
+                        }
+                    }
+                    else if (currentRowNumber >= csvTemplate.DataRowStartNumber)
+                    {
+                        currentRow = ParseCsvLine(line);
+                        tmpData.Add(currentRow);
+                    }
+                    currentRowNumber++;
+                }
+                Console.WriteLine($"Read end: {sw.Elapsed}");
+
+                // 获取 X、Y 坐标的最大值和最小值，并用它们创建新的 BodyInfo
+                int xMax = csvDetail.XMax = tmpData.Max(row => Convert.ToInt32(row[xColumnIndex]));
+                int xMin = csvDetail.XMin = tmpData.Min(row => Convert.ToInt32(row[xColumnIndex]));
+                int yMax = csvDetail.YMax = tmpData.Max(row => Convert.ToInt32(row[yColumnIndex]));
+                int yMin = csvDetail.YMin = tmpData.Min(row => Convert.ToInt32(row[yColumnIndex]));
+                csvDetail.BodyInfo_Matrix = new string[xMax - xMin + 1, yMax - yMin + 1][];
+
+                // 将数据填充到矩阵中
+                foreach (var row in tmpData)
+                {
+                    int x = Convert.ToInt32(row[xColumnIndex]);
+                    int y = Convert.ToInt32(row[yColumnIndex]);
+                    csvDetail.BodyInfo_Matrix[x - xMin, y - yMin] = row;
+                }
+
+                tmpData.Clear();
+                Console.WriteLine($"Data storage end: {sw.Elapsed}");
             }
             catch (Exception ex)
             {

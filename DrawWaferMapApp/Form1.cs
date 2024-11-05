@@ -183,15 +183,15 @@ namespace DrawWaferMapApp
         #region Events
         private void btnShowMap_Click(object sender, EventArgs e)
         {
-            if (csvDetail is null || csvDetail.BodyInfo is null)
+            if (csvDetail is null || (csvDetail.BodyInfo is null && csvDetail.BodyInfo_Matrix is null))
             {
                 return;
             }
             int xMax, xMin, yMax, yMin;
-            xMax = GetXMax();
-            xMin = GetXMin();
-            yMax = GetYMax();
-            yMin = GetYMin();
+            xMax = csvDetail.BodyInfo is null ? csvDetail.XMax : GetXMax();
+            xMin = csvDetail.BodyInfo is null ? csvDetail.XMin : GetXMin();
+            yMax = csvDetail.BodyInfo is null ? csvDetail.YMax : GetYMax();
+            yMin = csvDetail.BodyInfo is null ? csvDetail.YMin : GetYMin();
             WaferMapDisplayForm waferMapDisplayForm = new WaferMapDisplayForm()
             {
                 XMax = xMax,
@@ -199,6 +199,7 @@ namespace DrawWaferMapApp
                 YMax = yMax,
                 YMin = yMin,
                 Detail = csvDetail,
+                Template = csvTemplate,
             };
             waferMapDisplayForm.Show();
         }
@@ -223,7 +224,7 @@ namespace DrawWaferMapApp
                 csvDetail = new AOICsvDetail();
                 csvProcessTool.ReadCsvFile(txtMapPath.Text, csvTemplate, csvDetail);
                 Console.WriteLine("Completed." + Environment.NewLine + stopwatch.Elapsed);
-                MessageBox.Show("Completed.");
+                MessageBox.Show("Completed." + Environment.NewLine + stopwatch.Elapsed);
             }
             catch (Exception ex)
             {
@@ -270,16 +271,16 @@ namespace DrawWaferMapApp
             }
         }
 
-        private void btnTest_Click(object sender, EventArgs e)
-        {
-            sw.Start();
-            AOICsvTemplate csvTemplate = new AOICsvTemplate();
-            AOICsvProcessTool csvProcessTool = new AOICsvProcessTool();
-            csvDetail = new AOICsvDetail();
-            csvProcessTool.ReadCsvFile(txtMapPath.Text, csvTemplate, csvDetail);
-            sw.Stop();
-            ultraStatusBar1.Text = $"AOICsvProcessTool spended time: {sw.Elapsed}";
-        }
+        //private void btnTest_Click(object sender, EventArgs e)
+        //{
+        //    sw.Start();
+        //    AOICsvTemplate csvTemplate = new AOICsvTemplate();
+        //    AOICsvProcessTool csvProcessTool = new AOICsvProcessTool();
+        //    csvDetail = new AOICsvDetail();
+        //    csvProcessTool.ReadCsvFile(txtMapPath.Text, csvTemplate, csvDetail);
+        //    sw.Stop();
+        //    ultraStatusBar1.Text = $"AOICsvProcessTool spended time: {sw.Elapsed}";
+        //}
 
         private void btnFileReadAllLines_Click(object sender, EventArgs e)
         {
@@ -307,8 +308,25 @@ namespace DrawWaferMapApp
             stopwatch.Stop();
             ultraStatusBar1.Text = $"StreamReaderReadFile spended time: {stopwatch.Elapsed}";
         }
+
         #endregion
 
-        
+        private void btnCsvRead_Matrix_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                csvTemplate = new AOICsvTemplate();
+                csvDetail = new AOICsvDetail();
+                csvProcessTool.ReadCsvFile_Matrix(txtMapPath.Text, csvTemplate, csvDetail);
+                Debug.WriteLine("Completed." + Environment.NewLine + stopwatch.Elapsed);
+                MessageBox.Show("Completed." + Environment.NewLine + stopwatch.Elapsed);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+            }
+        }
     }
 }

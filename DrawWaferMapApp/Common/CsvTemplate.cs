@@ -36,13 +36,20 @@ namespace DrawWaferMapApp.Common
         /// </summary>
         public virtual int DataRowStartNumber { set; get; } = 0;
         /// <summary>
-        /// X坐标列号
+        /// X坐标列号, 列号从 1 开始计数
         /// </summary>
         public virtual int XCoordinateColumnNumber { set; get; } = 0;
         /// <summary>
-        /// Y坐标列号
+        /// Y坐标列号, 列号从 1 开始计数
         /// </summary>
         public virtual int YCoordinateColumnNumber { set; get; } = 0;
+        /// <summary>
+        /// 文件列名
+        /// </summary>
         public virtual string[] ColumnNames { set; get; } = null;
+        /// <summary>
+        /// 列名映射，用于将列名映射到该列的索引
+        /// </summary>
+        public virtual Dictionary<string, int> ColumnsMap { set; get; } = null;
     }
 }

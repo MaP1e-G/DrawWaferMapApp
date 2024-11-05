@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -13,6 +14,12 @@ using System.Windows.Forms;
 
 namespace DrawWaferMapApp.Controls
 {
+    public enum DataStorageType
+    {
+        Dictionary,
+        Matrix,
+    }
+
     public partial class WaferMap : UserControl
     {
         // Event
@@ -31,6 +38,8 @@ namespace DrawWaferMapApp.Controls
         public bool RedrawWhenResize { get; set; } = true;
         public CsvDetail Detail { get; set; }
         public Color[] Colors { get; set; }  // Bin 颜色
+        public DataStorageType DataType { get; set; } = DataStorageType.Dictionary;
+        public bool IsDrawCross { get; set; } = false;  // 是否绘制十字线
 
         // Private Fields
         private int waferWidth;
@@ -72,7 +81,7 @@ namespace DrawWaferMapApp.Controls
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (Detail is null || Detail.BodyInfo is null)
+            if (Detail is null || (Detail.BodyInfo is null && Detail.BodyInfo_Matrix is null))
             {
                 return;
             }
@@ -81,6 +90,18 @@ namespace DrawWaferMapApp.Controls
             // TranslateTransform 可以理解为：新的原点 = (0, 0) - (TranslationX, TranslationY)
             e.Graphics.TranslateTransform(TranslationX, TranslationY);  // Set additional translation
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;  // Use antialias
+
+            // 创建一个包含原点 (0, 0) 的点数组
+            PointF[] points = new PointF[] { new PointF(0, 0) };
+
+            // 使用TransformPoints将所有点进行转换
+            e.Graphics.Transform.TransformPoints(points);
+
+            // 获取变换后的原点位置
+            PointF transformedOrigin = points[0];
+
+            // 输出变换后的原点
+            Console.WriteLine($"Transformed Origin: X = {transformedOrigin.X}, Y = {transformedOrigin.Y}");
 
             // 计算图像的绘制比例
             float xScale = (float)Width / waferWidth * Zoom;
@@ -91,23 +112,65 @@ namespace DrawWaferMapApp.Controls
             float translationHeight = Height - (TranslationY);
 
             // 遍历 bodyInfo，绘制每个数据点
-            foreach (var entry in Detail.BodyInfo)
+            if (DataType == DataStorageType.Dictionary)
             {
-                Coordinate coord = entry.Key;
-                string[] data = entry.Value;
-
-                // 根据 x 和 y 计算位置
-                float xPos = (coord.X - XMin) * xScale;
-                float yPos = (coord.Y - YMin) * yScale;
-
-                // 不需要绘制控件外的点
-                if (xPos > translationWidth || yPos > translationHeight)
+                foreach (var entry in Detail.BodyInfo)
                 {
-                    continue;
-                }
+                    Coordinate coord = entry.Key;
+                    string[] data = entry.Value;
 
-                // 绘制每个点(椭圆)
-                e.Graphics.FillEllipse(new SolidBrush(GetBinColor(data[2])), xPos, yPos, DieSize.Width * xScale, DieSize.Height * yScale);
+                    // 根据 x 和 y 计算位置
+                    float xPos = (coord.X - XMin) * xScale;
+                    float yPos = (coord.Y - YMin) * yScale;
+
+                    // 不需要绘制控件外的点
+                    if (xPos < 0 - TranslationX || yPos < 0 - TranslationY || xPos > translationWidth || yPos > translationHeight)
+                    {
+                        continue;
+                    }
+
+                    // 绘制每个点(椭圆)
+                    e.Graphics.FillEllipse(new SolidBrush(GetBinColor(data[2])), xPos, yPos, DieSize.Width * xScale, DieSize.Height * yScale);
+                }
+            }
+            else
+            {
+                for (int x = 0; x < Detail.BodyInfo_Matrix.GetLength(0); x++)
+                {
+                    for (int y = 0; y < Detail.BodyInfo_Matrix.GetLength(1); y++)
+                    {
+                        string[] data = Detail.BodyInfo_Matrix[x, y];
+                        if (data is null)
+                        {
+                            continue;
+                        }
+
+                        // 根据 x 和 y 计算位置
+                        float xPos = ((x + XMin) - XMin) * xScale;
+                        float yPos = ((y + YMin) - YMin) * yScale;
+
+                        // 不需要绘制控件外的点
+                        if (xPos < 0 - TranslationX || yPos < 0 - TranslationY || xPos > translationWidth || yPos > translationHeight)
+                        {
+                            continue;
+                        }
+
+                        // 绘制每个点(椭圆)
+                        e.Graphics.FillEllipse(new SolidBrush(GetBinColor(data[2])), xPos, yPos, DieSize.Width * xScale, DieSize.Height * yScale);
+                    }
+                }
+            }
+
+            // 将控件平分为四个区域，绘制十字线
+            if (IsDrawCross)
+            {
+                e.Graphics.FillRectangle(Brushes.Black, 0 - TranslationX, (translationHeight - TranslationY) / 2 - 1, Width, 2);
+                e.Graphics.FillRectangle(Brushes.Black, (translationWidth - TranslationX) / 2 - 1, 0 - TranslationY, 2, Height);
+                //e.Graphics.FillRectangle(Brushes.Black, (translationWidth - TranslationY) / 2 - 1, 0, 2, translationHeight);
+                Console.WriteLine("translationWidth: " + translationWidth);
+                Console.WriteLine("translationHeight: " + translationHeight);
+                Console.WriteLine("TranslationX: " + TranslationX);
+                Console.WriteLine("TranslationY: " + TranslationY);
             }
         }
 
@@ -168,15 +231,8 @@ namespace DrawWaferMapApp.Controls
             int waferX = (int)((e.X - (TranslationX)) / xScale) + XMin;
             int waferY = (int)((e.Y - (TranslationY)) / yScale) + YMin;
 
-            if (!Detail.BodyInfo.ContainsKey(new Coordinate() { X = waferX, Y = waferY }))
-            {
-                WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs("N/A", "N/A"));
-            }
-            else
-            {
-                WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs(waferX.ToString(), waferY.ToString()));
-            }
-            Console.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
+            WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs(waferX.ToString(), waferY.ToString()));
+            //Debug.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
 
             if (isDragging)
             {
@@ -207,7 +263,7 @@ namespace DrawWaferMapApp.Controls
             }
             else if (e.Delta < 0)
             {
-                Zoom = Math.Max(ScaleFactor, Zoom - ScaleFactor);  // 缩小，确保缩放比例不小于设定的 ScaleFactor
+                Zoom = Math.Max(1.0f, Zoom - ScaleFactor);  // 缩小，确保缩放比例不小于1.0
             }
 
             // 计算缩放前的鼠标相对于整个wafer图的坐标
@@ -234,18 +290,12 @@ namespace DrawWaferMapApp.Controls
             int waferY = (int)((e.Y - TranslationY) / (Zoom * ((float)Height / waferHeight)) + YMin);
 
             // 触发鼠标移动事件
-            if (!Detail.BodyInfo.ContainsKey(new Coordinate() { X = waferX, Y = waferY }))
-            {
-                WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs("N/A", "N/A"));
-            }
-            else
-            {
-                WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs(waferX.ToString(), waferY.ToString()));
-            }
+
+            WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs(waferX.ToString(), waferY.ToString()));
 
             // Debug 输出
-            Console.WriteLine($"wafer X: {waferX}, wafer Y: {waferY}.");
-            Console.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
+            //Debug.WriteLine($"wafer X: {waferX}, wafer Y: {waferY}.");
+            //Debug.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
         }
 
 
