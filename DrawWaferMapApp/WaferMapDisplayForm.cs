@@ -178,5 +178,36 @@ namespace DrawWaferMapApp
                 wfmMain.RedrawWaferMap();
             }
         }
+
+        private void btnDrawBin_Click(object sender, EventArgs e)
+        {
+            if (wfmMain != null)
+            {
+                bool result = wfmMain.DrawBin();
+                if (result)
+                {
+                    btnClean.Enabled = true;
+                    btnDrawBin.Text = "Draw Bin(End)";
+                }
+                else
+                {
+                    btnClean.Enabled = false;
+                    btnDrawBin.Text = "Draw Bin(Start)";
+                }
+            }
+        }
+
+        private void btnClean_Click(object sender, EventArgs e)
+        {
+            if (wfmMain != null)
+            {
+                wfmMain.CleanDrawBinHistory();
+            }
+        }
+
+        private void btnModifyBin_Click(object sender, EventArgs e)
+        {
+            wfmMain.ModifyBin();
+        }
     }
 }
