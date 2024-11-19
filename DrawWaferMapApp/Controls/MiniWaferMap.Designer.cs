@@ -29,8 +29,16 @@ namespace DrawWaferMapApp.Controls
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            this.SuspendLayout();
+            // 
+            // MiniWaferMap
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Name = "MiniWaferMap";
+            this.Load += new System.EventHandler(this.MiniWaferMap_Load);
+            this.ResumeLayout(false);
+
         }
 
         #endregion

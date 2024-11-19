@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 
 namespace DrawWaferMapApp.Common
 {
+    public enum DataStorageType
+    {
+        Dictionary,
+        Matrix,
+        Unknow,
+    }
+
     public class CsvDetail
     {
         /// <summary>
@@ -16,6 +23,10 @@ namespace DrawWaferMapApp.Common
         /// 测试档中的数据，以矩阵形式存储
         /// </summary>
         public string[,][] BodyInfo_Matrix { get; set; }
+        /// <summary>
+        /// 数据存储的形式
+        /// </summary>
+        public DataStorageType DataType { get; set; } = DataStorageType.Dictionary;
         public int XMax { get; set; }
         public int XMin { get; set; }
         public int YMax { get; set; }

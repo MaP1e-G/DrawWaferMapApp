@@ -14,12 +14,6 @@ using System.Windows.Forms;
 
 namespace DrawWaferMapApp.Controls
 {
-    public enum DataStorageType
-    {
-        Dictionary,
-        Matrix,
-    }
-
     public partial class WaferMap : UserControl
     {
         // Event
@@ -38,7 +32,6 @@ namespace DrawWaferMapApp.Controls
         public bool RedrawWhenResize { get; set; } = true;
         public CsvDetail Detail { get; set; }
         public Color[] Colors { get; set; }  // Bin 颜色
-        public DataStorageType DataType { get; set; } = DataStorageType.Dictionary;
         public bool IsDrawCross { get; set; } = false;  // 是否绘制十字线
 
         // Private Fields
@@ -53,8 +46,8 @@ namespace DrawWaferMapApp.Controls
             InitializeComponent();
             SetStyle(ControlStyles.ResizeRedraw, true);  // 在调整窗口大小时重新绘制
             DoubleBuffered = true;  // 双缓冲
-            SetBinColor();
-            RegisterEvents();
+            //SetBinColor(null);
+            //RegisterEvents();
         }
 
         public WaferMap(CsvDetail detail, int xMax, int xMin, int yMax, int yMin)
@@ -69,12 +62,14 @@ namespace DrawWaferMapApp.Controls
             InitializeComponent();
             SetStyle(ControlStyles.ResizeRedraw, true);  // 在调整窗口大小时重新绘制
             DoubleBuffered = true;  // 双缓冲
-            SetBinColor();
-            RegisterEvents();
+            //SetBinColor(null);
+            //RegisterEvents();
         }
 
         private void WaferMap_Load(object sender, EventArgs e)
         {
+            SetBinColor(null);
+            RegisterEvents();
             this.Dock = DockStyle.Fill;  // 设置控件填充整个父容器
             // Calculate wafer size
             waferWidth = XMax - XMin;
@@ -114,7 +109,7 @@ namespace DrawWaferMapApp.Controls
             float translationHeight = Height - (TranslationY);
 
             // 遍历 bodyInfo，绘制每个数据点
-            if (DataType == DataStorageType.Dictionary)
+            if (Detail.DataType == DataStorageType.Dictionary)
             {
                 foreach (var entry in Detail.BodyInfo)
                 {
@@ -344,6 +339,10 @@ namespace DrawWaferMapApp.Controls
                 {
                     MessageBox.Show("Left Click!");
                 }
+                else if (e.Button == MouseButtons.Right)
+                {
+                    MessageBox.Show("Right Click!");
+                }
             }
         }
         #endregion
@@ -357,7 +356,19 @@ namespace DrawWaferMapApp.Controls
         /// <summary>
         /// 设置各个 Bin 等级的颜色
         /// </summary>
-        public void SetBinColor()
+        public void SetBinColor(Color[] colors)
+        {
+            if (colors is null || colors.Length == 0)
+            {
+                Colors = SetBinColorDefault();  // 如果传入的数组为空或长度为 0, 就调用默认颜色
+            }
+            else
+            {
+                Colors = colors;
+            }
+        }
+
+        private Color[] SetBinColorDefault()
         {
             Color[] colors = new Color[126];
             colors[0] = Color.Black;
@@ -379,16 +390,7 @@ namespace DrawWaferMapApp.Controls
             {
                 colors[i] = Color.Silver;
             }
-            SetBinColor(colors);
-        }
-
-        public void SetBinColor(Color[] colors)
-        {
-            if (colors is null || colors.Length == 0)
-            {
-                SetBinColor();  // 如果传入的数组为空或长度为 0, 就调用默认颜色
-            }
-            Colors = colors;
+            return colors;
         }
 
         /// <summary>

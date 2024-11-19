@@ -74,7 +74,7 @@ namespace DrawWaferMapApp.Tools
         /// <param name="csvTemplate"></param>
         /// /// <param name="csvDetail"></param>
         /// <returns></returns>
-        public virtual void ReadCsvFile(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
+        public virtual void ReadCsvFileToDictionary(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
         {
             if (csvTemplate is null || csvDetail is null)
                 throw new CsvProcessException("Read csv fail!There is a null input parameter.Please check the input parameters.");
@@ -134,6 +134,8 @@ namespace DrawWaferMapApp.Tools
                         csvDetail.BodyInfo.Add(currentCoordinate, currentRow);
                     }
                     currentRowNumber++;
+
+                    csvDetail.DataType = DataStorageType.Matrix;
                 }
             }
             catch (Exception ex)
@@ -149,7 +151,7 @@ namespace DrawWaferMapApp.Tools
         /// <param name="csvTemplate"></param>
         /// <param name="csvDetail"></param>
         /// <returns></returns>
-        public virtual void ReadCsvFile_Matrix(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
+        public virtual void ReadCsvFileToMatrix(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -231,6 +233,8 @@ namespace DrawWaferMapApp.Tools
 
                 tmpData.Clear();
                 Console.WriteLine($"Data storage end: {sw.Elapsed}");
+
+                csvDetail.DataType = DataStorageType.Matrix;
             }
             catch (Exception ex)
             {
@@ -268,7 +272,7 @@ namespace DrawWaferMapApp.Tools
         /// <param name="csvData"></param>
         /// <param name="csvTemplate"></param>
         /// <returns></returns>
-        public Dictionary<string, string[]> GetHeaderInfo(List<string[]> csvData, CsvTemplate csvTemplate)
+        public Dictionary<string, string[]> GetHeaderInfoToDictionary(List<string[]> csvData, CsvTemplate csvTemplate)
         {
             if (csvTemplate is null)
                 throw new CsvProcessException("Get header info fail!There is a null input parameter.Please check the input parameters.");
@@ -299,68 +303,7 @@ namespace DrawWaferMapApp.Tools
             }
         }
 
-        public void GetHeaderInfo(List<string[]> csvData, CsvTemplate csvTemplate, Dictionary<string, string[]> result)
-        {
-            if (csvTemplate is null || result is null)
-                throw new CsvProcessException("Get header info fail!There is a null input parameter.Please check the input parameters.");
-
-            try
-            {
-                // 提前存储模板中的值，避免多次属性访问
-                int headerRowStart = csvTemplate.HeaderRowStartNumber - 1;
-                int headerRowEnd = csvTemplate.HeaderRowEndNumber;
-                int keyColumnIndex = csvTemplate.HeaderKeyColumnNumber - 1;
-                int valueColumnIndex = csvTemplate.HeaderValueColumnNumber - 1;
-
-                for (int i = headerRowStart; i < headerRowEnd; i++)
-                {
-                    string[] currentRow = csvData[i];
-                    int valueColumnsLength = currentRow.Length - valueColumnIndex;
-                    string[] valueColumns = new string[valueColumnsLength];
-                    Array.Copy(currentRow, valueColumnIndex, valueColumns, 0, valueColumnsLength);  // 使用数组切片代替 LINQ 的 Skip
-                    result.Add(currentRow[keyColumnIndex], valueColumns);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
-        public Dictionary<string, string[]> GetHeaderInfoParallel(List<string[]> csvData, CsvTemplate csvTemplate)
-        {
-            if (csvTemplate == null)
-                throw new CsvProcessException("Get header info fail!There is a null input parameter.Please check the input parameters.");
-
-            var result = new ConcurrentDictionary<string, string[]>();
-
-            try
-            {
-                // 提前存储模板中的值，避免多次属性访问
-                int headerRowStart = csvTemplate.HeaderRowStartNumber - 1;
-                int headerRowEnd = csvTemplate.HeaderRowEndNumber;
-                int keyColumnIndex = csvTemplate.HeaderKeyColumnNumber - 1;
-                int valueColumnIndex = csvTemplate.HeaderValueColumnNumber - 1;
-
-                // 使用 Parallel.For 来并行处理 CSV 数据
-                Parallel.For(headerRowStart, headerRowEnd, i =>
-                {
-                    string[] currentRow = csvData[i];
-
-                    int valueColumnsLength = currentRow.Length - valueColumnIndex;
-                    string[] valueColumns = new string[valueColumnsLength];
-                    Array.Copy(currentRow, valueColumnIndex, valueColumns, 0, valueColumnsLength);// 使用数组切片代替 LINQ 的 Skip
-
-                    result.TryAdd(currentRow[keyColumnIndex], valueColumns);
-                });
-
-                return new Dictionary<string, string[]>(result);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
+        public void GetHeaderInfoToDictionary(List<string[]> csvData, CsvTemplate csvTemplate, Dictionary<string, string[]> result) => result = GetHeaderInfoToDictionary(csvData, csvTemplate);
 
         /// <summary>
         /// 提取已解析的 CSV 文件中的表身(单身)信息
@@ -368,7 +311,7 @@ namespace DrawWaferMapApp.Tools
         /// <param name="csvData"></param>
         /// <param name="csvTemplate"></param>
         /// <returns></returns>
-        public Dictionary<Coordinate, string[]> GetBodyInfo(List<string[]> csvData, CsvTemplate csvTemplate)
+        public Dictionary<Coordinate, string[]> GetBodyInfoToDictionary(List<string[]> csvData, CsvTemplate csvTemplate)
         {
             if (csvTemplate is null)
                 throw new CsvProcessException("Get body info fail!There is a null input parameter.Please check the input parameters.");
@@ -396,59 +339,7 @@ namespace DrawWaferMapApp.Tools
             }
         }
 
-        public void GetBodyInfo(List<string[]> csvData, CsvTemplate csvTemplate, Dictionary<Coordinate, string[]> result)
-        {
-            if (csvTemplate is null || result is null)
-                throw new CsvProcessException("Get body info fail!There is a null input parameter.Please check the input parameters.");
-
-            try
-            {
-                // 提前存储模板中的值，避免多次属性访问
-                int dataRowStart = csvTemplate.DataRowStartNumber - 1;
-                int xColumnIndex = csvTemplate.XCoordinateColumnNumber - 1;
-                int yColumnIndex = csvTemplate.YCoordinateColumnNumber - 1;
-
-                for (int i = dataRowStart; i < csvData.Count; i++)
-                {
-                    string[] currentRow = csvData[i];
-                    Coordinate currentCoordinate = new Coordinate { X = Convert.ToInt32(currentRow[xColumnIndex]), Y = Convert.ToInt32(currentRow[yColumnIndex]) };
-                    result.Add(currentCoordinate, currentRow);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
-        public Dictionary<Coordinate, string[]> GetBodyInfoParallel(List<string[]> csvData, CsvTemplate csvTemplate)
-        {
-            if (csvTemplate is null)
-                throw new CsvProcessException("Get body info fail!There is a null input parameter.Please check the input parameters.");
-
-            var result = new ConcurrentDictionary<Coordinate, string[]>();
-
-            try
-            {
-                // 提前存储模板中的值，避免多次属性访问
-                int dataRowStart = csvTemplate.DataRowStartNumber - 1;
-                int xColumnIndex = csvTemplate.XCoordinateColumnNumber - 1;
-                int yColumnIndex = csvTemplate.YCoordinateColumnNumber - 1;
-
-                Parallel.For(dataRowStart, csvData.Count, i =>
-                {
-                    string[] currentRow = csvData[i];
-                    Coordinate currentCoordinate = new Coordinate { X = Convert.ToInt32(currentRow[xColumnIndex]), Y = Convert.ToInt32(currentRow[yColumnIndex]) };
-                    result.TryAdd(currentCoordinate, currentRow);
-                });
-
-                return new Dictionary<Coordinate, string[]>(result);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
+        public void GetBodyInfoToDictionary(List<string[]> csvData, CsvTemplate csvTemplate, Dictionary<Coordinate, string[]> result) => result = GetBodyInfoToDictionary(csvData, csvTemplate);
 
         #region Methods
         /// <summary>

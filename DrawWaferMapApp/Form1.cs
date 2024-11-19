@@ -47,8 +47,8 @@ namespace DrawWaferMapApp
             this.DragDrop += new DragEventHandler(Form1_DragDrop);
 
             // 为文本框设置默认值
-            txtMapPath.Text = @"C:\Users\admin\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-02#RF06DD3DD.csv";
-            //txtMapPath.Text = @"C:\Users\67020\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-01#RF06DD3DD.csv";
+            //txtMapPath.Text = @"C:\Users\admin\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-02#RF06DD3DD.csv";
+            txtMapPath.Text = @"C:\Users\67020\Desktop\SZHC\法则\键合、叠图、第二次AOI\2\HC240907DC040186-14#07DC04LJ_AOI02.csv";
         }
 
         // 当拖放操作进入窗体时触发
@@ -222,7 +222,7 @@ namespace DrawWaferMapApp
                 //stopwatch.Stop();
                 AOICsvTemplate csvTemplate = new AOICsvTemplate();
                 csvDetail = new AOICsvDetail();
-                csvProcessTool.ReadCsvFile(txtMapPath.Text, csvTemplate, csvDetail);
+                csvProcessTool.ReadCsvFileToDictionary(txtMapPath.Text, csvTemplate, csvDetail);
                 Console.WriteLine("Completed." + Environment.NewLine + stopwatch.Elapsed);
                 MessageBox.Show("Completed." + Environment.NewLine + stopwatch.Elapsed);
             }
@@ -257,7 +257,7 @@ namespace DrawWaferMapApp
                     ColumnNames = RedYellowColumnList,
                 };
                 var t2 = Task.Run(() => csvProcessTool.GetHeaderInfo(records, csvTemplate));
-                var t3 = Task.Run(() => csvProcessTool.GetBodyInfoParallel(records, csvTemplate));
+                var t3 = Task.Run(() => csvProcessTool.GetBodyInfo(records, csvTemplate));
                 Console.WriteLine("2 await return: " + stopwatch.Elapsed);
                 await Task.WhenAll(t2, t3);
                 headerInfo = t2.Result;
@@ -319,7 +319,7 @@ namespace DrawWaferMapApp
                 stopwatch.Start();
                 csvTemplate = new AOICsvTemplate();
                 csvDetail = new AOICsvDetail();
-                csvProcessTool.ReadCsvFile_Matrix(txtMapPath.Text, csvTemplate, csvDetail);
+                csvProcessTool.ReadCsvFileToMatrix(txtMapPath.Text, csvTemplate, csvDetail);
                 Debug.WriteLine("Completed." + Environment.NewLine + stopwatch.Elapsed);
                 MessageBox.Show("Completed." + Environment.NewLine + stopwatch.Elapsed);
             }

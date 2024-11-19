@@ -92,7 +92,6 @@ namespace DrawWaferMapApp
                     YMax = this.YMax,
                     YMin = this.YMin,
                     Detail = this.Detail,
-                    DataType = DataStorageType.Dictionary,
                 };
                 // 订阅事件，即时更新显示坐标
                 wfmMain.WaferMapMouseMove += (s, args) =>
@@ -136,9 +135,13 @@ namespace DrawWaferMapApp
                     YMax = this.YMax,
                     YMin = this.YMin,
                     Detail = this.Detail,
-                    DataType = DataStorageType.Matrix,
                     IsDrawCross = true,
                 };
+
+                // 设置迷你晶圆图的属性
+                miniWaferMap1.Detail = Detail;
+                miniWaferMap1.HalfOfTheSide = 10;
+
                 // 订阅事件，即时更新显示坐标
                 wfmMain.WaferMapMouseMove += (s, args) =>
                 {
@@ -159,6 +162,10 @@ namespace DrawWaferMapApp
                             return;
                         }
                         txtBinNo.Text = Detail.BodyInfo_Matrix[x - XMin, y - YMin][Template.ColumnsMap["BIN"]];
+                        //miniWaferMap1.Redraw(x, y, Detail, 10);
+                        miniWaferMap1.X = x;
+                        miniWaferMap1.Y = y;
+                        miniWaferMap1.Redraw();
                     }
                     catch (FormatException ex)
                     {

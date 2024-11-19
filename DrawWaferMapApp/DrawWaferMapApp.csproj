@@ -90,6 +90,9 @@
     <Compile Include="WaferMapDisplayForm.Designer.cs">
       <DependentUpon>WaferMapDisplayForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Controls\MiniWaferMap.resx">
+      <DependentUpon>MiniWaferMap.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\WaferMap.resx">
       <DependentUpon>WaferMap.cs</DependentUpon>
     </EmbeddedResource>
