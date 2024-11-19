@@ -190,38 +190,12 @@ namespace DrawWaferMapApp.Controls
             }
         }
 
-        private Color GetBinColor(int binNo)
-        {
-            return Colors[binNo];
-        }
-
-        private Color GetBinColor(string binNo)
-        {
-            return Colors[Convert.ToInt32(binNo)];
-        }
-
-        /// <summary>
-        /// 为控件注册事件
-        /// </summary>
-        private void RegisterEvents()
-        {
-            MouseMove += WaferMap_MouseMove;
-            MouseDown += WaferMap_MouseDown;
-            MouseWheel += WaferMap_MouseWheel;
-            MouseUp += WaferMap_MouseUp;
-            MouseClick += WaferMap_MouseClick;
-        }
-
-        #region Functions use to draw sth.
-
-        #endregion
-
         #region Mouse Events.Overwrite they if you need.
         private bool isDragging = false;
         private Point dragStart;
         private Point lastMousePosition;
 
-        public virtual void WaferMap_MouseDown(object sender, MouseEventArgs e)
+        protected virtual void WaferMap_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
             {
@@ -230,7 +204,7 @@ namespace DrawWaferMapApp.Controls
             }
         }
 
-        public virtual void WaferMap_MouseMove(object sender, MouseEventArgs e)
+        protected virtual void WaferMap_MouseMove(object sender, MouseEventArgs e)
         {
             // 检查鼠标是否在移动，如果位置没有变化，直接返回
             if (e.Location == lastMousePosition)
@@ -260,14 +234,14 @@ namespace DrawWaferMapApp.Controls
             }
         }
 
-        public virtual void WaferMap_MouseUp(object sender, MouseEventArgs e)
+        protected virtual void WaferMap_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
             {
                 isDragging = false;
             }
         }
-        public virtual void WaferMap_MouseWheel(object sender, MouseEventArgs e)
+        protected virtual void WaferMap_MouseWheel(object sender, MouseEventArgs e)
         {
             if (isDrawBin)
             {
@@ -319,7 +293,7 @@ namespace DrawWaferMapApp.Controls
             //Debug.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
         }
 
-        public virtual void WaferMap_MouseClick(object sender, MouseEventArgs e)
+        protected virtual void WaferMap_MouseClick(object sender, MouseEventArgs e)
         {
             // 如果是画 Bin 模式，点击鼠标左键时，会在鼠标点击位置绘制一个灰色的 2 * 2 的正方形
             if (isDrawBin)
@@ -344,6 +318,18 @@ namespace DrawWaferMapApp.Controls
                     MessageBox.Show("Right Click!");
                 }
             }
+        }
+
+        /// <summary>
+        /// 为控件注册事件
+        /// </summary>
+        private void RegisterEvents()
+        {
+            MouseMove += WaferMap_MouseMove;
+            MouseDown += WaferMap_MouseDown;
+            MouseWheel += WaferMap_MouseWheel;
+            MouseUp += WaferMap_MouseUp;
+            MouseClick += WaferMap_MouseClick;
         }
         #endregion
 
@@ -579,7 +565,7 @@ namespace DrawWaferMapApp.Controls
         /// </summary>
         /// <param name="points"></param>
         /// <returns></returns>
-        public bool IsValidPolygon(List<Point> points)
+        private bool IsValidPolygon(List<Point> points)
         {
             int n = points.Count;
 
@@ -655,6 +641,16 @@ namespace DrawWaferMapApp.Controls
             {
                 throw;
             }
+        }
+
+        private Color GetBinColor(int binNo)
+        {
+            return Colors[binNo];
+        }
+
+        private Color GetBinColor(string binNo)
+        {
+            return Colors[Convert.ToInt32(binNo)];
         }
         #endregion
     }
