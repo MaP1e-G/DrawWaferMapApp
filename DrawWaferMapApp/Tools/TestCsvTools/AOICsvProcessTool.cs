@@ -15,7 +15,7 @@ namespace DrawWaferMapApp.Tools
         public AOICsvProcessTool() : base() { }
         public AOICsvProcessTool(string pattern) : base(pattern) { }
 
-        public override void ReadCsvFile(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
+        public override void ReadCsvFileToDictionary(string filePath, CsvTemplate csvTemplate, CsvDetail csvDetail)
         {
             if (csvTemplate is null || csvDetail is null)
                 throw new CsvProcessException("Read csv fail!There is a null input parameter.Please check the input parameters.");
@@ -29,7 +29,6 @@ namespace DrawWaferMapApp.Tools
                 int xColumnIndex = csvTemplate.XCoordinateColumnNumber - 1;
                 int yColumnIndex = csvTemplate.YCoordinateColumnNumber - 1;
                 int dataRowStartNumber = csvTemplate.DataRowStartNumber;
-                // 创建新的 BodyInfo
                 csvDetail.BodyInfo = new Dictionary<Coordinate, string[]>();
                 string[] currentRow;
 
