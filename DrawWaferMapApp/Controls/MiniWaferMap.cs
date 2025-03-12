@@ -26,6 +26,7 @@ namespace DrawWaferMapApp.Controls
         public MiniWaferMap()
         {
             InitializeComponent();
+            DoubleBuffered = true;
         }
 
         #region Event

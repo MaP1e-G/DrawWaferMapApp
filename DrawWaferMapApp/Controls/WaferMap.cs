@@ -34,23 +34,6 @@ namespace DrawWaferMapApp.Controls
         public Color[] Colors { get; set; }  // Bin 颜色
         public bool IsDrawCross { get; set; } = false;  // 是否绘制十字线
         public bool IsFixed { get; set; } = false;  // 固定某一个点
-        [DefaultValue(64)]
-        [Description("设置跟随鼠标的正方形的透明度（0-255）")]
-        [Category("外观")]
-        public int SquareOpacity
-        {
-            get => _opacity;
-            set
-            {
-                if (value < 0) value = 0;
-                if (value > 255) value = 255;
-                if (_opacity != value)
-                {
-                    _opacity = value;
-                    Invalidate(); // 重绘控件
-                }
-            }
-        }
 
         // Private Fields
         private int _waferWidth;
@@ -59,7 +42,8 @@ namespace DrawWaferMapApp.Controls
         private bool _canModifyBin = false;  // 是否可以修改 Bin
         private static readonly object _paintLock = new object();
         private Size _squareSize = new Size(25, 25);  // 绘制的半透明小正方形方框的大小
-        private int _opacity = 64;  // 透明度，0-255之间
+        private int _opacity = 128;  // 透明度，0-255之间
+        private Point _squareCenter = new Point(0, 0);
 
         public WaferMap()
         {
@@ -236,17 +220,16 @@ namespace DrawWaferMapApp.Controls
         protected virtual void WaferMap_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
-            {
                 isDragging = false;
-            }
         }
 
         protected virtual void WaferMap_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (_isDrawBin)
-            {
-                return;
-            }
+            // 如果开启了“固定”选项，则不处理鼠标移动事件
+            if (IsFixed)
+
+                if (_isDrawBin)
+                    return;
 
             // 记录旧的缩放比例
             float oldZoom = Zoom;
@@ -307,8 +290,9 @@ namespace DrawWaferMapApp.Controls
                     binGraphics.DrawLine(drawBinPen, drawBinPoints[drawBinPoints.Count - 2], drawBinPoints[drawBinPoints.Count - 1]);
                 }
             }
-            else if(e.Button == MouseButtons.Right)
+            else if (e.Button == MouseButtons.Right)
             {
+                _squareCenter = e.Location;
                 contextMenuStrip1.Show(this, e.X, e.Y);
             }
         }
@@ -328,6 +312,23 @@ namespace DrawWaferMapApp.Controls
         private void tsmiFixed_CheckedChanged(object sender, EventArgs e)
         {
             IsFixed = tsmiFixed.Checked;
+            Invalidate();
+            Refresh();
+            if (IsFixed)
+            {
+                // 创建半透明白色画刷并绘制
+                using (Graphics g = this.CreateGraphics())
+                using (SolidBrush brush = new SolidBrush(Color.FromArgb(_opacity, Color.White)))
+                {
+                    g.FillRectangle(brush, _squareCenter.X - _squareSize.Width / 2, _squareCenter.Y - _squareSize.Height / 2, _squareSize.Width, _squareSize.Height);
+
+                    // 可选：绘制边框
+                    using (Pen pen = new Pen(Color.FromArgb(Math.Min(255, _opacity + 50), Color.White)))
+                    {
+                        g.DrawRectangle(pen, _squareCenter.X - _squareSize.Width / 2, _squareCenter.Y - _squareSize.Height / 2, _squareSize.Width, _squareSize.Height);
+                    }
+                }
+            }
         }
 
         private void tsmiFixed_Click(object sender, EventArgs e)
