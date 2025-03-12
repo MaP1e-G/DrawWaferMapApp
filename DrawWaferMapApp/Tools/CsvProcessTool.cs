@@ -16,30 +16,45 @@ namespace DrawWaferMapApp.Tools
     public class CsvProcessTool
     {
         // Property
-        public string Pattern { get; set; } = @",(?=(?:[^""]*""[^""]*"")*[^""]*$)";  // 默认匹配模式
+        public string Pattern
+        {
+            get => _pattern;
+            set
+            {
+                if (_pattern != value)
+                {
+                    _pattern = value; _csvSplitRegex = new Regex(_pattern, RegexOptions.Compiled);
+                }
+            }
+        }
         public char SplitChar { get; set; } = ',';  // 默认分隔符
 
         // Field
-        private Regex csvSplitRegex;
+        private string _pattern = @",(?=(?:[^""]*""[^""]*"")*[^""]*$)";
+        private Regex _csvSplitRegex;
 
         public CsvProcessTool()
         {
-            csvSplitRegex = new Regex(Pattern, RegexOptions.Compiled);
+            _csvSplitRegex = new Regex(_pattern, RegexOptions.Compiled);
         }
 
-        public CsvProcessTool(string pattern)
+        public CsvProcessTool(string pattern) 
         {
             Pattern = pattern;
-            csvSplitRegex = new Regex(Pattern, RegexOptions.Compiled);
         }
 
         /// <summary>
-        /// 读取 CSV 文件, 每一行为一个字符串数组
+        /// 读取 filePath 指向的 CSV 文件, 并将文件每一行的内容根据 SplitChar 指定的分隔符进行分隔，产生的字符串数组将被放入 List 中。
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
         public List<string[]> ReadCsvFile(string filePath) => ReadCsvFile(filePath, false);
 
+        /// <summary>
+        /// 读取 filePath 指向的 CSV 文件, 第二个参数指定根据 SplitChar 指定的分隔符进行分隔，还是使用指定的正则表达式进行分隔。结果将被放入 List 中。
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public List<string[]> ReadCsvFile(string filePath, bool useRegex)
         {
             List<string[]> result = new List<string[]>();
@@ -68,7 +83,7 @@ namespace DrawWaferMapApp.Tools
         }
 
         /// <summary>
-        /// 读取 CSV 文件, 并将信息存入到 csvDetail 的字典中
+        /// 读取 filePath 指向的 CSV 文件, 并将信息存入到 csvDetail 的 BodyInfo 属性中
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="csvTemplate"></param>
@@ -97,7 +112,7 @@ namespace DrawWaferMapApp.Tools
 
                 foreach (var line in File.ReadLines(filePath))
                 {
-                    if (IsInRange(currentRowNumber, csvTemplate.HeaderRowStartNumber, csvTemplate.HeaderRowEndNumber))
+                    if (IsInRange(currentRowNumber, csvTemplate.HeaderRowStartNumber, csvTemplate.HeaderRowEndNumber))  // 处理表头
                     {
                         // 表头行用正则进行分隔
                         currentRow = ParseCsvLineByRegex(line);
@@ -106,7 +121,7 @@ namespace DrawWaferMapApp.Tools
                         var propertyInfo = propertyInfos.FirstOrDefault(info => info.Name.Equals(currentRow[keyColumnIndex], StringComparison.Ordinal));
                         if (propertyInfo != null)
                         {
-                            // 获取值并赋值
+                            // 获取值并赋值，针对值类型、string 类型、Array 类型做不同处理
                             if (propertyInfo.PropertyType.IsValueType || typeof(string).IsAssignableFrom(propertyInfo.PropertyType))
                             {
                                 string valueToSet = currentRow[valueColumnIndex];
@@ -126,7 +141,7 @@ namespace DrawWaferMapApp.Tools
                             }
                         }
                     }
-                    else if (currentRowNumber >= csvTemplate.DataRowStartNumber)
+                    else if (currentRowNumber >= csvTemplate.DataRowStartNumber)  // 处理表身
                     {
                         // 数据行用逗号进行分隔
                         currentRow = ParseCsvLine(line);
@@ -135,7 +150,7 @@ namespace DrawWaferMapApp.Tools
                     }
                     currentRowNumber++;
 
-                    csvDetail.DataType = DataStorageType.Matrix;
+                    //csvDetail.DataType = DataStorageType.Matrix;
                 }
             }
             catch (Exception ex)
@@ -173,7 +188,7 @@ namespace DrawWaferMapApp.Tools
                 int valueColumnIndex = csvTemplate.HeaderValueColumnNumber - 1;
                 int xColumnIndex = csvTemplate.XCoordinateColumnNumber - 1;
                 int yColumnIndex = csvTemplate.YCoordinateColumnNumber - 1;
-                
+
                 string[] currentRow;
 
                 foreach (var line in File.ReadLines(filePath))
@@ -388,7 +403,7 @@ namespace DrawWaferMapApp.Tools
             string[] result;
             try
             {
-                result = csvSplitRegex.Split(line).Select(field => field.Trim('"')).ToArray();
+                result = _csvSplitRegex.Split(line).Select(field => field.Trim('"')).ToArray();
             }
             catch (Exception ex)
             {

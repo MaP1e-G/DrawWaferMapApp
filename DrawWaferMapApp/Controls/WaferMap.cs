@@ -33,37 +33,23 @@ namespace DrawWaferMapApp.Controls
         public CsvDetail Detail { get; set; }
         public Color[] Colors { get; set; }  // Bin 颜色
         public bool IsDrawCross { get; set; } = false;  // 是否绘制十字线
+        public bool IsFixed { get; set; } = false;  // 固定某一个点
 
         // Private Fields
-        private int waferWidth;
-        private int waferHeight;
-        private bool isDrawBin = false;  // 画 Bin 标志，画 Bin 模式下不允许除了描点以外的操作
-        private bool canModifyBin = false;  // 是否可以修改 Bin
-        private static readonly object paintLock = new object();
+        private int _waferWidth;
+        private int _waferHeight;
+        private bool _isDrawBin = false;  // 画 Bin 标志，画 Bin 模式下不允许除了描点以外的操作
+        private bool _canModifyBin = false;  // 是否可以修改 Bin
+        private static readonly object _paintLock = new object();
+        private Size _squareSize = new Size(25, 25);  // 绘制的半透明小正方形方框的大小
+        private int _opacity = 128;  // 透明度，0-255之间
+        private Point _squareCenter = new Point(0, 0);
 
         public WaferMap()
         {
             InitializeComponent();
             SetStyle(ControlStyles.ResizeRedraw, true);  // 在调整窗口大小时重新绘制
             DoubleBuffered = true;  // 双缓冲
-            //SetBinColor(null);
-            //RegisterEvents();
-        }
-
-        public WaferMap(CsvDetail detail, int xMax, int xMin, int yMax, int yMin)
-        {
-            // 因通过对象初始化器来对属性赋值是在构造函数执行完毕后进行的，故以下赋值需要在其他操作执行前完成
-            Detail = detail;
-            XMax = xMax;
-            XMin = xMin;
-            YMax = yMax;
-            YMin = yMin;
-
-            InitializeComponent();
-            SetStyle(ControlStyles.ResizeRedraw, true);  // 在调整窗口大小时重新绘制
-            DoubleBuffered = true;  // 双缓冲
-            //SetBinColor(null);
-            //RegisterEvents();
         }
 
         private void WaferMap_Load(object sender, EventArgs e)
@@ -71,9 +57,10 @@ namespace DrawWaferMapApp.Controls
             SetBinColor(null);
             RegisterEvents();
             this.Dock = DockStyle.Fill;  // 设置控件填充整个父容器
+
             // Calculate wafer size
-            waferWidth = XMax - XMin;
-            waferHeight = YMax - YMin;
+            _waferWidth = XMax - XMin;
+            _waferHeight = YMax - YMin;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -83,26 +70,25 @@ namespace DrawWaferMapApp.Controls
                 return;
             }
 
-            e.Graphics.Clear(Color.White);  // Clear BackColor
+            e.Graphics.Clear(Color.White);  // 清除所有绘制内容，并用白色填充背景
+
             // TranslateTransform 可以理解为：新的原点 = (0, 0) - (TranslationX, TranslationY)
-            e.Graphics.TranslateTransform(TranslationX, TranslationY);  // Set additional translation
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;  // Use antialias
+            e.Graphics.TranslateTransform(TranslationX, TranslationY);  // 重设原点
+            Console.WriteLine(TranslationX + " " + TranslationY);
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;  // 抗锯齿
 
             // 创建一个包含原点 (0, 0) 的点数组
-            PointF[] points = new PointF[] { new PointF(0, 0) };
-
+            //PointF[] points = new PointF[] { new PointF(0, 0) };
             // 使用TransformPoints将所有点进行转换
-            e.Graphics.Transform.TransformPoints(points);
-
+            //e.Graphics.Transform.TransformPoints(points);
             // 获取变换后的原点位置
-            PointF transformedOrigin = points[0];
-
+            //PointF transformedOrigin = points[0];
             // 输出变换后的原点
-            Console.WriteLine($"Transformed Origin: X = {transformedOrigin.X}, Y = {transformedOrigin.Y}");
+            //Console.WriteLine($"Transformed Origin: X = {transformedOrigin.X}, Y = {transformedOrigin.Y}");
 
             // 计算图像的绘制比例
-            float xScale = (float)Width / waferWidth * Zoom;
-            float yScale = (float)Height / waferHeight * Zoom;
+            float xScale = (float)Width / _waferWidth * Zoom;
+            float yScale = (float)Height / _waferHeight * Zoom;
 
             // 记录偏移后的坐标系上限
             float translationWidth = Width - (TranslationX);
@@ -127,7 +113,7 @@ namespace DrawWaferMapApp.Controls
                     }
 
                     // 绘制每个点(椭圆)
-                    if (canModifyBin && !IsInPolygon2(new Point((int)xPos, (int)yPos), drawBinPoints))
+                    if (_canModifyBin && !IsInPolygon2(new Point((int)xPos, (int)yPos), drawBinPoints))
                     {
                         e.Graphics.FillEllipse(new SolidBrush(Color.Pink), xPos, yPos, DieSize.Width * xScale, DieSize.Height * yScale);
                     }
@@ -160,7 +146,7 @@ namespace DrawWaferMapApp.Controls
                         }
 
                         // 绘制每个点(椭圆)
-                        if (canModifyBin && !IsInPolygon2(new Point((int)xPos, (int)yPos), drawBinPoints) && data[2].Equals("122"))
+                        if (_canModifyBin && !IsInPolygon2(new Point((int)xPos, (int)yPos), drawBinPoints) && data[2].Equals("122"))
                         {
                             e.Graphics.FillEllipse(new SolidBrush(Color.Pink), xPos, yPos, DieSize.Width * xScale, DieSize.Height * yScale);
                         }
@@ -177,16 +163,11 @@ namespace DrawWaferMapApp.Controls
             {
                 e.Graphics.FillRectangle(Brushes.Black, 0 - TranslationX, (translationHeight - TranslationY) / 2 - 1, Width, 2);
                 e.Graphics.FillRectangle(Brushes.Black, (translationWidth - TranslationX) / 2 - 1, 0 - TranslationY, 2, Height);
-                //e.Graphics.FillRectangle(Brushes.Black, (translationWidth - TranslationY) / 2 - 1, 0, 2, translationHeight);
-                Console.WriteLine("translationWidth: " + translationWidth);
-                Console.WriteLine("translationHeight: " + translationHeight);
-                Console.WriteLine("TranslationX: " + TranslationX);
-                Console.WriteLine("TranslationY: " + TranslationY);
             }
 
-            if (canModifyBin)
+            if (_canModifyBin)
             {
-                canModifyBin = false;
+                _canModifyBin = false;
             }
         }
 
@@ -206,25 +187,27 @@ namespace DrawWaferMapApp.Controls
 
         protected virtual void WaferMap_MouseMove(object sender, MouseEventArgs e)
         {
+            // 如果开启了“固定”选项，则不处理鼠标移动事件
+            if (IsFixed)
+                return;
+
             // 检查鼠标是否在移动，如果位置没有变化，直接返回
             if (e.Location == lastMousePosition)
-            {
                 return;
-            }
 
             // 更新鼠标上次位置
             lastMousePosition = e.Location;
 
             // 根据鼠标当前坐标来计算当前 Die 的实际坐标
-            float xScale = (float)Width / waferWidth * Zoom;
-            float yScale = (float)Height / waferHeight * Zoom;
+            float xScale = (float)Width / _waferWidth * Zoom;
+            float yScale = (float)Height / _waferHeight * Zoom;
             int waferX = (int)((e.X - (TranslationX)) / xScale) + XMin;
             int waferY = (int)((e.Y - (TranslationY)) / yScale) + YMin;
 
             WaferMapMouseMove?.Invoke(this, new WaferMapMouseMoveEventArgs(waferX.ToString(), waferY.ToString()));
-            //Debug.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
+            Debug.WriteLine($"Mouse X: {e.X}, Mouse Y: {e.Y}.");
 
-            if (isDragging && !isDrawBin)
+            if (isDragging && !_isDrawBin)
             {
                 TranslationX += e.X - dragStart.X;
                 TranslationY += e.Y - dragStart.Y;
@@ -237,16 +220,16 @@ namespace DrawWaferMapApp.Controls
         protected virtual void WaferMap_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
-            {
                 isDragging = false;
-            }
         }
+
         protected virtual void WaferMap_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (isDrawBin)
-            {
-                return;
-            }
+            // 如果开启了“固定”选项，则不处理鼠标移动事件
+            if (IsFixed)
+
+                if (_isDrawBin)
+                    return;
 
             // 记录旧的缩放比例
             float oldZoom = Zoom;
@@ -262,27 +245,27 @@ namespace DrawWaferMapApp.Controls
             }
 
             // 计算缩放前的鼠标相对于整个wafer图的坐标
-            float oldXPos = (e.X - TranslationX) / (oldZoom * ((float)Width / waferWidth));
-            float oldYPos = (e.Y - TranslationY) / (oldZoom * ((float)Height / waferHeight));
+            float oldXPos = (e.X - TranslationX) / (oldZoom * ((float)Width / _waferWidth));
+            float oldYPos = (e.Y - TranslationY) / (oldZoom * ((float)Height / _waferHeight));
 
             // 更新 xScale 和 yScale
-            float xScale = (float)Width / waferWidth * Zoom;
-            float yScale = (float)Height / waferHeight * Zoom;
+            float xScale = (float)Width / _waferWidth * Zoom;
+            float yScale = (float)Height / _waferHeight * Zoom;
 
             // 计算缩放后的鼠标相对于整个wafer图的坐标
-            float newXPos = (e.X - TranslationX) / (Zoom * ((float)Width / waferWidth));
-            float newYPos = (e.Y - TranslationY) / (Zoom * ((float)Height / waferHeight));
+            float newXPos = (e.X - TranslationX) / (Zoom * ((float)Width / _waferWidth));
+            float newYPos = (e.Y - TranslationY) / (Zoom * ((float)Height / _waferHeight));
 
             // 通过平移调整，使鼠标相对位置不变
-            TranslationX += (newXPos - oldXPos) * Zoom * ((float)Width / waferWidth);
-            TranslationY += (newYPos - oldYPos) * Zoom * ((float)Height / waferHeight);
+            TranslationX += (newXPos - oldXPos) * Zoom * ((float)Width / _waferWidth);
+            TranslationY += (newYPos - oldYPos) * Zoom * ((float)Height / _waferHeight);
 
             // 请求重绘
             Invalidate();
 
             // 获取当前wafer的X和Y位置
-            int waferX = (int)((e.X - TranslationX) / (Zoom * ((float)Width / waferWidth)) + XMin);
-            int waferY = (int)((e.Y - TranslationY) / (Zoom * ((float)Height / waferHeight)) + YMin);
+            int waferX = (int)((e.X - TranslationX) / (Zoom * ((float)Width / _waferWidth)) + XMin);
+            int waferY = (int)((e.Y - TranslationY) / (Zoom * ((float)Height / _waferHeight)) + YMin);
 
             // 触发鼠标移动事件
 
@@ -295,8 +278,8 @@ namespace DrawWaferMapApp.Controls
 
         protected virtual void WaferMap_MouseClick(object sender, MouseEventArgs e)
         {
-            // 如果是画 Bin 模式，点击鼠标左键时，会在鼠标点击位置绘制一个灰色的 2 * 2 的正方形
-            if (isDrawBin)
+            // 如果是画 Bin 模式，点击鼠标左键时，会在鼠标点击位置绘制一个灰色的 5 * 5 的正方形
+            if (_isDrawBin)
             {
                 drawBinPoints.Add(new Point(e.X, e.Y));
                 binGraphics.FillRectangle(Brushes.Gray, e.X, e.Y, 5, 5);
@@ -307,16 +290,10 @@ namespace DrawWaferMapApp.Controls
                     binGraphics.DrawLine(drawBinPen, drawBinPoints[drawBinPoints.Count - 2], drawBinPoints[drawBinPoints.Count - 1]);
                 }
             }
-            else
+            else if (e.Button == MouseButtons.Right)
             {
-                if (e.Button == MouseButtons.Left)
-                {
-                    MessageBox.Show("Left Click!");
-                }
-                else if (e.Button == MouseButtons.Right)
-                {
-                    MessageBox.Show("Right Click!");
-                }
+                _squareCenter = e.Location;
+                contextMenuStrip1.Show(this, e.X, e.Y);
             }
         }
 
@@ -330,6 +307,33 @@ namespace DrawWaferMapApp.Controls
             MouseWheel += WaferMap_MouseWheel;
             MouseUp += WaferMap_MouseUp;
             MouseClick += WaferMap_MouseClick;
+        }
+
+        private void tsmiFixed_CheckedChanged(object sender, EventArgs e)
+        {
+            IsFixed = tsmiFixed.Checked;
+            Invalidate();
+            Refresh();
+            if (IsFixed)
+            {
+                // 创建半透明白色画刷并绘制
+                using (Graphics g = this.CreateGraphics())
+                using (SolidBrush brush = new SolidBrush(Color.FromArgb(_opacity, Color.White)))
+                {
+                    g.FillRectangle(brush, _squareCenter.X - _squareSize.Width / 2, _squareCenter.Y - _squareSize.Height / 2, _squareSize.Width, _squareSize.Height);
+
+                    // 可选：绘制边框
+                    using (Pen pen = new Pen(Color.FromArgb(Math.Min(255, _opacity + 50), Color.White)))
+                    {
+                        g.DrawRectangle(pen, _squareCenter.X - _squareSize.Width / 2, _squareCenter.Y - _squareSize.Height / 2, _squareSize.Width, _squareSize.Height);
+                    }
+                }
+            }
+        }
+
+        private void tsmiFixed_Click(object sender, EventArgs e)
+        {
+            tsmiFixed.Checked = !tsmiFixed.Checked;
         }
         #endregion
 
@@ -387,8 +391,8 @@ namespace DrawWaferMapApp.Controls
         public void SetPosition(int x, int y)
         {
             // 计算当前图像的绘制比例，结合 Zoom 缩放
-            float xScale = (float)Width / waferWidth * Zoom;
-            float yScale = (float)Height / waferHeight * Zoom;
+            float xScale = (float)Width / _waferWidth * Zoom;
+            float yScale = (float)Height / _waferHeight * Zoom;
 
             // 获取控件的中心点（像素坐标）
             float controlCenterX = Width / 2f;
@@ -424,7 +428,7 @@ namespace DrawWaferMapApp.Controls
         {
             bool result = false;
 
-            if (isDrawBin)  // 如果已经在画 Bin 模式下，再次点击按钮时，退出画 Bin 模式
+            if (_isDrawBin)  // 如果已经在画 Bin 模式下，再次点击按钮时，退出画 Bin 模式
             {
                 // 需要判断是否能够构成多边形
                 if (!IsValidPolygon(drawBinPoints))
@@ -435,7 +439,7 @@ namespace DrawWaferMapApp.Controls
                 }
                 else
                 {
-                    canModifyBin = true;
+                    _canModifyBin = true;
                 }
 
                 // 如果已经有 3 个以上的点，绘制最后一个点和第一个点之间的线
@@ -457,14 +461,14 @@ namespace DrawWaferMapApp.Controls
                     drawBinPen = null;
                 }
 
-                result = isDrawBin = false;
+                result = _isDrawBin = false;
             }
             else  // 否则，进入画 Bin 模式
             {
                 // 重置相关变量
                 drawBinPoints = new List<Point>();
                 lastX = lastY = -1;
-                canModifyBin = false;
+                _canModifyBin = false;
 
                 // 创建一个新的 Graphics 对象
                 binGraphics = this.CreateGraphics();
@@ -472,10 +476,37 @@ namespace DrawWaferMapApp.Controls
                 // 创建一个新的画笔
                 drawBinPen = new Pen(Color.Silver, 2);
 
-                result = isDrawBin = true;
+                result = _isDrawBin = true;
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 画 Bin 撤销
+        /// </summary>
+        public void DrawBinUndo()
+        {
+            if (_isDrawBin && drawBinPoints.Count > 0)  // 已经在画 Bin 模式下，且已绘制的点大于1时，才能撤销
+            {
+                // 从 List 删除最后绘制的点
+                drawBinPoints.RemoveAt(drawBinPoints.Count - 1);
+
+                // 执行重绘
+                Invalidate();
+                Refresh();
+
+                // 重新画点和线
+                if (drawBinPoints.Count > 0)
+                {
+                    binGraphics.FillRectangle(Brushes.Gray, drawBinPoints[0].X, drawBinPoints[0].Y, 5, 5);
+                }
+                for (int i = 1; i < drawBinPoints.Count; i++)
+                {
+                    binGraphics.FillRectangle(Brushes.Gray, drawBinPoints[i].X, drawBinPoints[i].Y, 5, 5);
+                    binGraphics.DrawLine(drawBinPen, drawBinPoints[i], drawBinPoints[i - 1]);
+                }
+            }
         }
 
         /// <summary>
@@ -486,7 +517,7 @@ namespace DrawWaferMapApp.Controls
             // 重置相关变量
             drawBinPoints = new List<Point>();
             lastX = lastY = -1;
-            canModifyBin = false;
+            _canModifyBin = false;
 
             // 重绘控件
             RedrawWaferMap();
@@ -494,7 +525,7 @@ namespace DrawWaferMapApp.Controls
 
         public void ModifyBin()
         {
-            if (!canModifyBin)
+            if (!_canModifyBin)
             {
                 MessageBox.Show("请先画 Bin！");
                 return;
@@ -645,12 +676,12 @@ namespace DrawWaferMapApp.Controls
 
         private Color GetBinColor(int binNo)
         {
-            return Colors[binNo];
+            return binNo < Colors.Length ? Colors[binNo] : Color.Black;
         }
 
         private Color GetBinColor(string binNo)
         {
-            return Colors[Convert.ToInt32(binNo)];
+            return Convert.ToInt32(binNo) < Colors.Length ? Colors[Convert.ToInt32(binNo)] : Color.Black;
         }
         #endregion
     }

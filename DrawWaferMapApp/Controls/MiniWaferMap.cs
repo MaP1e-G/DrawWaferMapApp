@@ -26,6 +26,7 @@ namespace DrawWaferMapApp.Controls
         public MiniWaferMap()
         {
             InitializeComponent();
+            DoubleBuffered = true;
         }
 
         #region Event
@@ -71,29 +72,6 @@ namespace DrawWaferMapApp.Controls
         /// <summary>
         /// 绘制白布
         /// </summary>
-        private void DrawWhitePicture()
-        {
-            try
-            {
-                //if (bitmap != null)
-                //{
-                //    bitmap.Dispose();
-                //}
-                //if (g != null)
-                //{
-                //    g.Dispose();
-                //}
-
-                //bitmap = new Bitmap(waferMap.Width, waferMap.Height);
-                //g = Graphics.FromImage(bitmap);
-                //g.Clear(Color.White);
-                //waferMap.Image = bitmap;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
         private void DrawWhitePicture(Graphics g)
         {
             try
@@ -197,20 +175,54 @@ namespace DrawWaferMapApp.Controls
                 int gap = rectangeSide / 5;
                 //g.Clear(Color.White);
 
-                for (int i = X - HalfOfTheSide; i <= X + HalfOfTheSide; i++)
+                if (Detail.DataType == DataStorageType.Dictionary)
                 {
-                    for (int j = Y - HalfOfTheSide; j <= Y + HalfOfTheSide; j++)
+                    for (int i = X - HalfOfTheSide; i <= X + HalfOfTheSide; i++)
                     {
-                        if (i >= Detail.XMin && i <= Detail.XMax && j >= Detail.YMin && j <= Detail.YMax)
+                        for (int j = Y - HalfOfTheSide; j <= Y + HalfOfTheSide; j++)
                         {
-                            string[] binInfo = Detail.BodyInfo_Matrix[i - Detail.XMin, j - Detail.YMin];
-                            if (binInfo != null && binInfo.Length > 0)
+                            Coordinate curCoordinate = new Coordinate(i, j);
+                            if (Detail.BodyInfo.ContainsKey(curCoordinate))
                             {
-                                Rectangle rect = new Rectangle((i - X + HalfOfTheSide) * (rectangeSide + gap), (j - Y + HalfOfTheSide) * (rectangeSide + gap), rectangeSide, rectangeSide);
-                                g.FillRectangle(new SolidBrush(GetBinColor(binInfo[2])), rect);
+                                string[] binInfo = Detail.BodyInfo[curCoordinate];
+                                if (binInfo != null && binInfo.Length > 0)
+                                {
+                                    Rectangle rect = new Rectangle((i - X + HalfOfTheSide) * (rectangeSide + gap), (j - Y + HalfOfTheSide) * (rectangeSide + gap), rectangeSide, rectangeSide);
+                                    g.FillRectangle(new SolidBrush(GetBinColor(binInfo[2])), rect);
+                                }
                             }
                         }
                     }
+                }
+                else if (Detail.DataType == DataStorageType.Matrix)
+                {
+                    for (int i = X - HalfOfTheSide; i <= X + HalfOfTheSide; i++)
+                    {
+                        for (int j = Y - HalfOfTheSide; j <= Y + HalfOfTheSide; j++)
+                        {
+                            if (i >= Detail.XMin && i <= Detail.XMax && j >= Detail.YMin && j <= Detail.YMax)
+                            {
+                                string[] binInfo = Detail.BodyInfo_Matrix[i - Detail.XMin, j - Detail.YMin];
+                                if (binInfo != null && binInfo.Length > 0)
+                                {
+                                    if (i == X && j == Y)
+                                    {
+                                        // 将中心点绘制成黄色的
+                                        g.FillRectangle(new SolidBrush(Color.Yellow), new Rectangle(HalfOfTheSide * (rectangeSide + gap), HalfOfTheSide * (rectangeSide + gap), rectangeSide, rectangeSide));
+                                    }
+                                    else
+                                    {
+                                        Rectangle rect = new Rectangle((i - X + HalfOfTheSide) * (rectangeSide + gap), (j - Y + HalfOfTheSide) * (rectangeSide + gap), rectangeSide, rectangeSide);
+                                        g.FillRectangle(new SolidBrush(GetBinColor(binInfo[2])), rect);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    return;
                 }
             }
             catch (Exception ex)
@@ -261,12 +273,12 @@ namespace DrawWaferMapApp.Controls
 
         private Color GetBinColor(int binNo)
         {
-            return Colors[binNo];
+            return binNo < Colors.Length ? Colors[binNo] : Color.Black;
         }
 
         private Color GetBinColor(string binNo)
         {
-            return Colors[Convert.ToInt32(binNo)];
+            return Convert.ToInt32(binNo) < Colors.Length ? Colors[Convert.ToInt32(binNo)] : Color.Black;
         }
         #endregion
 

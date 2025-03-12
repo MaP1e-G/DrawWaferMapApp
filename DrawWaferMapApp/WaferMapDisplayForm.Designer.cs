@@ -33,6 +33,7 @@ namespace DrawWaferMapApp
             Infragistics.Win.Appearance appearance2 = new Infragistics.Win.Appearance();
             Infragistics.Win.Appearance appearance3 = new Infragistics.Win.Appearance();
             this.ugb1 = new Infragistics.Win.Misc.UltraGroupBox();
+            this.btnDrawBinUndo = new Infragistics.Win.Misc.UltraButton();
             this.btnModifyBin = new Infragistics.Win.Misc.UltraButton();
             this.btnClean = new Infragistics.Win.Misc.UltraButton();
             this.btnDrawBin = new Infragistics.Win.Misc.UltraButton();
@@ -58,6 +59,7 @@ namespace DrawWaferMapApp
             // 
             // ugb1
             // 
+            this.ugb1.Controls.Add(this.btnDrawBinUndo);
             this.ugb1.Controls.Add(this.miniWaferMap1);
             this.ugb1.Controls.Add(this.btnModifyBin);
             this.ugb1.Controls.Add(this.btnClean);
@@ -78,6 +80,16 @@ namespace DrawWaferMapApp
             this.ugb1.Size = new System.Drawing.Size(335, 861);
             this.ugb1.TabIndex = 1;
             this.ugb1.Text = "ultraGroupBox1";
+            // 
+            // btnDrawBinUndo
+            // 
+            this.btnDrawBinUndo.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnDrawBinUndo.Location = new System.Drawing.Point(202, 219);
+            this.btnDrawBinUndo.Name = "btnDrawBinUndo";
+            this.btnDrawBinUndo.Size = new System.Drawing.Size(127, 23);
+            this.btnDrawBinUndo.TabIndex = 15;
+            this.btnDrawBinUndo.Text = "Draw Bin Undo";
+            this.btnDrawBinUndo.Click += new System.EventHandler(this.btnDrawBinUndo_Click);
             // 
             // btnModifyBin
             // 
@@ -225,11 +237,141 @@ namespace DrawWaferMapApp
             this.miniWaferMap1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.miniWaferMap1.Colors = null;
+            this.miniWaferMap1.Colors = new System.Drawing.Color[] {
+        System.Drawing.Color.Black,
+        System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(195)))), ((int)(((byte)(0))))),
+        System.Drawing.Color.FromArgb(((int)(((byte)(155)))), ((int)(((byte)(0)))), ((int)(((byte)(156))))),
+        System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(130)))), ((int)(((byte)(1))))),
+        System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(153)))), ((int)(((byte)(0))))),
+        System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(154)))), ((int)(((byte)(254))))),
+        System.Drawing.Color.FromArgb(((int)(((byte)(206)))), ((int)(((byte)(0)))), ((int)(((byte)(205))))),
+        System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(101)))), ((int)(((byte)(207))))),
+        System.Drawing.Color.FromArgb(((int)(((byte)(254)))), ((int)(((byte)(154)))), ((int)(((byte)(206))))),
+        System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(154)))), ((int)(((byte)(0))))),
+        System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(181)))), ((int)(((byte)(74))))),
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Silver,
+        System.Drawing.Color.Green,
+        System.Drawing.Color.Red,
+        System.Drawing.Color.Blue,
+        System.Drawing.Color.Black};
+            this.miniWaferMap1.Detail = null;
+            this.miniWaferMap1.HalfOfTheSide = 10;
             this.miniWaferMap1.Location = new System.Drawing.Point(6, 526);
             this.miniWaferMap1.Name = "miniWaferMap1";
             this.miniWaferMap1.Size = new System.Drawing.Size(323, 323);
             this.miniWaferMap1.TabIndex = 14;
+            this.miniWaferMap1.X = 0;
+            this.miniWaferMap1.Y = 0;
             // 
             // WaferMapDisplayForm
             // 
@@ -240,6 +382,8 @@ namespace DrawWaferMapApp
             this.Controls.Add(this.ugb1);
             this.Name = "WaferMapDisplayForm";
             this.Text = "txtBinNo";
+            this.Load += new System.EventHandler(this.WaferMapDisplayForm_Load);
+            this.Resize += new System.EventHandler(this.WaferMapDisplayForm_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.ugb1)).EndInit();
             this.ugb1.ResumeLayout(false);
             this.ugb1.PerformLayout();
@@ -268,5 +412,6 @@ namespace DrawWaferMapApp
         private Infragistics.Win.Misc.UltraButton btnClean;
         private Infragistics.Win.Misc.UltraButton btnModifyBin;
         private Controls.MiniWaferMap miniWaferMap1;
+        private Infragistics.Win.Misc.UltraButton btnDrawBinUndo;
     }
 }

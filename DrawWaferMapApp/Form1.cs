@@ -48,7 +48,7 @@ namespace DrawWaferMapApp
 
             // 为文本框设置默认值
             //txtMapPath.Text = @"C:\Users\admin\Desktop\SZHC\法则\AOI\HC240706DD3D1756T-02#RF06DD3DD.csv";
-            txtMapPath.Text = @"C:\Users\67020\Desktop\SZHC\法则\键合、叠图、第二次AOI\2\HC240907DC040186-14#07DC04LJ_AOI02.csv";
+            txtMapPath.Text = @"C:\Users\admin\Desktop\SZHC\法则\AOI\HC240906BD850616-01#06BD85E.csv";
         }
 
         // 当拖放操作进入窗体时触发
@@ -225,6 +225,7 @@ namespace DrawWaferMapApp
                 csvProcessTool.ReadCsvFileToDictionary(txtMapPath.Text, csvTemplate, csvDetail);
                 Console.WriteLine("Completed." + Environment.NewLine + stopwatch.Elapsed);
                 MessageBox.Show("Completed." + Environment.NewLine + stopwatch.Elapsed);
+                btnShowMap.PerformClick();
             }
             catch (Exception ex)
             {
@@ -256,8 +257,8 @@ namespace DrawWaferMapApp
                     YCoordinateColumnNumber = 2,
                     ColumnNames = RedYellowColumnList,
                 };
-                var t2 = Task.Run(() => csvProcessTool.GetHeaderInfo(records, csvTemplate));
-                var t3 = Task.Run(() => csvProcessTool.GetBodyInfo(records, csvTemplate));
+                var t2 = Task.Run(() => csvProcessTool.GetHeaderInfoToDictionary(records, csvTemplate));
+                var t3 = Task.Run(() => csvProcessTool.GetBodyInfoToDictionary(records, csvTemplate));
                 Console.WriteLine("2 await return: " + stopwatch.Elapsed);
                 await Task.WhenAll(t2, t3);
                 headerInfo = t2.Result;
@@ -322,6 +323,7 @@ namespace DrawWaferMapApp
                 csvProcessTool.ReadCsvFileToMatrix(txtMapPath.Text, csvTemplate, csvDetail);
                 Debug.WriteLine("Completed." + Environment.NewLine + stopwatch.Elapsed);
                 MessageBox.Show("Completed." + Environment.NewLine + stopwatch.Elapsed);
+                btnShowMap.PerformClick();
             }
             catch (Exception ex)
             {

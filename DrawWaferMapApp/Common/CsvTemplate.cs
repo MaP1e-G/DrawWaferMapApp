@@ -36,11 +36,11 @@ namespace DrawWaferMapApp.Common
         /// </summary>
         public virtual int DataRowStartNumber { set; get; } = 0;
         /// <summary>
-        /// X坐标列号, 列号从 1 开始计数
+        /// X 坐标列号, 列号从 1 开始计数
         /// </summary>
         public virtual int XCoordinateColumnNumber { set; get; } = 0;
         /// <summary>
-        /// Y坐标列号, 列号从 1 开始计数
+        /// Y 坐标列号, 列号从 1 开始计数
         /// </summary>
         public virtual int YCoordinateColumnNumber { set; get; } = 0;
         /// <summary>

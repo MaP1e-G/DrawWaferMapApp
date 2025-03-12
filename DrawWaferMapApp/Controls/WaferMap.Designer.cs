@@ -29,7 +29,26 @@ namespace DrawWaferMapApp.Controls
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tsmiFixed = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiFixed});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 48);
+            // 
+            // tsmiFixed
+            // 
+            this.tsmiFixed.Name = "tsmiFixed";
+            this.tsmiFixed.Size = new System.Drawing.Size(180, 22);
+            this.tsmiFixed.Text = "固定";
+            this.tsmiFixed.CheckedChanged += new System.EventHandler(this.tsmiFixed_CheckedChanged);
+            this.tsmiFixed.Click += new System.EventHandler(this.tsmiFixed_Click);
             // 
             // WaferMap
             // 
@@ -37,10 +56,14 @@ namespace DrawWaferMapApp.Controls
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Name = "WaferMap";
             this.Load += new System.EventHandler(this.WaferMap_Load);
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiFixed;
     }
 }
