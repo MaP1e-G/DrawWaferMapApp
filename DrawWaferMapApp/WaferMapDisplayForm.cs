@@ -161,7 +161,7 @@ namespace DrawWaferMapApp
                     YMax = this.YMax,
                     YMin = this.YMin,
                     Detail = this.Detail,
-                    //IsDrawCross = true,
+                    //DrawCross = true,
                 };
 
                 // 设置迷你晶圆图的属性
