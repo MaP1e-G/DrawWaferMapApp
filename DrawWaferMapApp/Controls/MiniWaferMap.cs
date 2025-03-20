@@ -19,9 +19,9 @@ namespace DrawWaferMapApp.Controls
         public CsvDetail Detail { get; set; }
         public int HalfOfTheSide { get; set; } = 10;
 
-        private PictureBox waferMap;
-        private Bitmap bitmap;
-        private Graphics g;
+        private PictureBox _waferMap;
+        private Bitmap _bitmap;
+        private Graphics _g;
 
         public MiniWaferMap()
         {
@@ -61,11 +61,11 @@ namespace DrawWaferMapApp.Controls
         private void InitializeOther()
         {
             // pictureBox
-            //waferMap = new PictureBox();
-            //waferMap.Location = new Point(0, 0);
-            //waferMap.Size = new Size(Math.Min(Width, Height), Math.Min(Width, Height));
-            //waferMap.SizeMode = PictureBoxSizeMode.AutoSize;
-            //this.Controls.Add(waferMap);
+            //_waferMap = new PictureBox();
+            //_waferMap.Location = new Point(0, 0);
+            //_waferMap.Size = new Size(Math.Min(Width, Height), Math.Min(Width, Height));
+            //_waferMap.SizeMode = PictureBoxSizeMode.AutoSize;
+            //this.Controls.Add(_waferMap);
             //DrawWhitePicture();
         }
 
@@ -99,21 +99,21 @@ namespace DrawWaferMapApp.Controls
                 {
                     halfOfTheSide = 10;
                 }
-                //if (bitmap != null)
+                //if (_bitmap != null)
                 //{
-                //    bitmap.Dispose();
+                //    _bitmap.Dispose();
                 //}
                 //if (g != null)
                 //{
                 //    g.Dispose();
                 //}
 
-                waferMap.Size = new Size(Math.Min(Width, Height), Math.Min(Width, Height));
-                int rectangeSide = (int)Math.Round((double)waferMap.Width / (2 * halfOfTheSide + (2 * halfOfTheSide) / 5 + 1));
+                _waferMap.Size = new Size(Math.Min(Width, Height), Math.Min(Width, Height));
+                int rectangeSide = (int)Math.Round((double)_waferMap.Width / (2 * halfOfTheSide + (2 * halfOfTheSide) / 5 + 1));
                 int gap = rectangeSide / 5;
-                bitmap = new Bitmap(waferMap.Width, waferMap.Height);
-                g = Graphics.FromImage(bitmap);
-                g.Clear(Color.White);
+                _bitmap = new Bitmap(_waferMap.Width, _waferMap.Height);
+                _g = Graphics.FromImage(_bitmap);
+                _g.Clear(Color.White);
 
                 for (int i = x - halfOfTheSide; i <= x + halfOfTheSide; i++)
                 {
@@ -127,7 +127,7 @@ namespace DrawWaferMapApp.Controls
                         //        if (binInfo.Length > 0)
                         //        {
                         //            Rectangle rect = new Rectangle((i - x + halfOfTheSide) * (rectangeSide + gap) + gap, (j - y + halfOfTheSide) * (rectangeSide + gap) + gap, rectangeSide, rectangeSide);
-                        //            g.FillRectangle(new SolidBrush(GetBinColor(binInfo[0])), rect);
+                        //            _g.FillRectangle(new SolidBrush(GetBinColor(binInfo[0])), rect);
                         //        }
                         //    }
                         //}
@@ -139,7 +139,7 @@ namespace DrawWaferMapApp.Controls
                         //        if (binInfo.Length > 0)
                         //        {
                         //            Rectangle rect = new Rectangle((i - x + halfOfTheSide) * (rectangeSide + gap) + gap, (j - y + halfOfTheSide) * (rectangeSide + gap) + gap, rectangeSide, rectangeSide);
-                        //            g.FillRectangle(new SolidBrush(GetBinColor(binInfo[0])), rect);
+                        //            _g.FillRectangle(new SolidBrush(GetBinColor(binInfo[0])), rect);
                         //        }
                         //    }
                         //}
@@ -149,13 +149,13 @@ namespace DrawWaferMapApp.Controls
                             if (binInfo != null && binInfo.Length > 0)
                             {
                                 Rectangle rect = new Rectangle((i - x + halfOfTheSide) * (rectangeSide + gap), (j - y + halfOfTheSide) * (rectangeSide + gap), rectangeSide, rectangeSide);
-                                g.FillRectangle(new SolidBrush(GetBinColor(binInfo[2])), rect);
+                                _g.FillRectangle(new SolidBrush(GetBinColor(binInfo[2])), rect);
                             }
                         }
                     }
                 }
 
-                waferMap.Image = bitmap;
+                _waferMap.Image = _bitmap;
             }
             catch (Exception ex)
             {
